@@ -1,0 +1,11 @@
+*type	project_id	*submitter_id	*projects.code	*name_of_institute	PI_email	PI_name	address	center_type	code	contact_email	contact_name	description_of_lab	keyword_name	name	namespace	note	short_name	translational_projects_title	url_of_lab_website
+lab	cancer_commons_program-demo_data_project	lab_0	demo_data_project	Not Assigned															
+lab	cancer_commons_program-demo_data_project	lab_1	demo_data_project	Liangpunsakul Lab at Indiana University															
+lab	cancer_commons_program-demo_data_project	lab_2	demo_data_project	Malhi Lab at Mayo Clinic															
+lab	cancer_commons_program-demo_data_project	lab_3	demo_data_project	McClain Lab at University of Louisville															
+lab	cancer_commons_program-demo_data_project	lab_4	demo_data_project	Mehal Lab at Yale University															
+lab	cancer_commons_program-demo_data_project	lab_5	demo_data_project	Nagy Lab at Cleveland Clinic															
+lab	cancer_commons_program-demo_data_project	lab_6	demo_data_project	Schnabl Lab at UC San Diego															
+lab	cancer_commons_program-demo_data_project	lab_7	demo_data_project	Simonetto Lab at Mayo Clinic															
+lab	cancer_commons_program-demo_data_project	lab_8	demo_data_project	Szabo Lab at Harvard Medical School															
+lab	cancer_commons_program-demo_data_project	lab_9	demo_data_project	Bataller Lab at University of Pittsburgh															
