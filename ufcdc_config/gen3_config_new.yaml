@@ -1,5 +1,5 @@
 global:
-  hostname: ufcdc.cis230185.projects.jetstream-cloud.org
+  hostname: ufcdc-dev.cis230185.projects.jetstream-cloud.org
   dictionaryUrl: https://scymz1.github.io/cancer_commons_dictionary/schema.json
 
 
@@ -8,8 +8,8 @@ fence:
     MOCK_GOOGLE_AUTH: false
     OPENID_CONNECT:
       google:
-        client_id: xxxxxx
-        client_secret: xxxxxx
+        client_id: xxxxx
+        client_secret: xxxxx
   USER_YAML: |
     cloud_providers: {}
     authz:
@@ -402,10 +402,10 @@ portal:
             }
           ],
           "categorical9Colors": [
-            "#E69F00", "#56B4E9", "#009E73",
-            "#F0E442", "#0072B2", "#D55E00",
-            "#CC79A7", "#999999", "#462255"],
-          "categorical2Colors": ["#E69F00", "#009E73"]
+            "#E57272", "#F06192", "#B967C7",
+            "#7985CB", "#4CD0E0", "#4CB6AC",
+            "#ADD480", "#FFF176", "#FFB74C"],
+          "categorical2Colors": ["#E57272", "#B967C7"]
         },
         "explorerConfig": [
           {
@@ -439,17 +439,17 @@ portal:
                 "chartType": "fullPie",
                 "title": "Visits (day)"
               },
-              "drinking_frequency": {
+              "smoking_frequency": {
                 "chartType":"bar",
-                "title": "Drinking Frequency in the past year"
+                "title": "Smoking Frequency in the past year"
               },
-              "drinks_per_day": {
+              "smokes_per_day": {
                 "chartType":"bar",
-                "title": "Drinks per Day in the past year"
+                "title": "Smokes per Day in the past year"
               },
-              "frequency_of_heavy_drinking": {
+              "frequency_of_heavy_smoking": {
                 "chartType":"bar",
-                "title": "Frequency Of Heavy Drinking in the past year"
+                "title": "Frequency Of Heavy Smoking in the past year"
               },
               "aki_status": {
                 "chartType": "fullPie",
@@ -495,9 +495,9 @@ portal:
                 {
                   "title": "Behavior",
                   "fields":[
-                    "drinking_frequency",
-                    "drinks_per_day",
-                    "frequency_of_heavy_drinking"
+                    "smoking_frequency",
+                    "smokes_per_day",
+                    "frequency_of_heavy_smoking"
                   ]
                 },
                 {
@@ -532,7 +532,7 @@ portal:
                 "actarm",
                 "ethnicity",
                 "age_at_index",
-                "drinking_frequency",
+                "smoking_frequency",
                 "aki_status",
                 "days_to_aki",
                 "days_90_aki",
@@ -558,9 +558,9 @@ portal:
                 { "field": "gender", "name": "sex"},
                 {"field":"observational", "name": "Observational"},
                 {"field": "clinical_trial", "name": "Clinical Trial" },
-                { "field": "drinking_frequency", "name": "Drinking frequency in the past year"},
-                { "field": "drinks_per_day", "name": "Drinks per day in the past year"},
-                { "field": "frequency_of_heavy_drinking", "name": "Frequency of heavy drinking in the past year"}
+                { "field": "smoking_frequency", "name": "Smoking frequency in the past year"},
+                { "field": "smokes_per_day", "name": "Smokes per day in the past year"},
+                { "field": "frequency_of_heavy_smoking", "name": "Frequency of heavy Smoking in the past year"}
               ],
               "manifestMapping": {
                 "resourceIndexType": "file",
@@ -1433,11 +1433,11 @@ etl:
               - name: age_at_index
           - path: audits
             props:
-              - name: drinking_frequency
+              - name: smoking_frequency
                 src: adt0101
-              - name: drinks_per_day
+              - name: smokes_per_day
                 src: adt0102
-              - name: frequency_of_heavy_drinking
+              - name: frequency_of_heavy_smoking
                 src: adt0103
         aggregated_props:
           - name: visit_day

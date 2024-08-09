@@ -3,7 +3,7 @@
 
 This is uf cancer-data-center application development code using gen3. To start helm deployment:
 ```
-helm upgrade --install gen3 ./helm/gen3 -f ./ufcdec_config/gen3_config_new.yaml
+helm upgrade --install gen3 ./helm/gen3 -f ./ufcdc_config/gen3_config_new.yaml
 ```
 Then create program node and project node, and instructions is same as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md), then upload tsv files in [demo-data](./demo-data) folder following same guidelines as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md).
 
