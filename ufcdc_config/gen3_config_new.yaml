@@ -8,8 +8,8 @@ fence:
     MOCK_GOOGLE_AUTH: false
     OPENID_CONNECT:
       google:
-        client_id: xxxxx
-        client_secret: xxxxx
+        client_id: xxxx
+        client_secret: xxxx
   USER_YAML: |
     cloud_providers: {}
     authz:
@@ -995,7 +995,7 @@ portal:
             }
           },
           {
-            "tabTitle": "Meta node",
+            "tabTitle": "Omics Data",
             "charts": {
               "project_id": {
                 "chartType": "count",
@@ -1029,7 +1029,7 @@ portal:
             "filters": {
               "tabs": [
                 {
-                  "title":"genomic metadata",
+                  "title":"Genomic Metadata",
                   "fields": [
                     "core_metadata_collections_id"
                   ]
