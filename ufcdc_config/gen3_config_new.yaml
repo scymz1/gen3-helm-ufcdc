@@ -451,9 +451,9 @@ portal:
                 "chartType":"bar",
                 "title": "Frequency Of Heavy Smoking in the past year"
               },
-              "aki_status": {
+              "irAE_status": {
                 "chartType": "fullPie",
-                "title": "AKI Status"
+                "title": "irAE Status"
               },
               "days_90_survival": {
                 "chartType":"fullPie",
@@ -463,13 +463,13 @@ portal:
                 "chartType":"fullPie",
                 "title": "Days 180 Survival"
               },
-              "days_90_aki": {
+              "days_90_irAE": {
                 "chartType": "pie",
-                "title": "Days 90 AKI"
+                "title": "Days 90 irAE"
               },
-              "days_180_aki": {
+              "days_180_irAE": {
                 "chartType":"pie",
-                "title": "Days 180 AKI"
+                "title": "Days 180 irAE"
               }
             },
             "filters": {
@@ -503,12 +503,12 @@ portal:
                 {
                   "title": "Outcome",
                   "fields":[
-                    "aki_status",
-                    "days_to_aki",
+                    "irAE_status",
+                    "days_to_irAE",
                     "days_90_survival",
                     "days_180_survival",
-                    "days_90_aki",
-                    "days_180_aki"
+                    "days_90_irAE",
+                    "days_180_irAE"
                   ]
                 },
                 {
@@ -533,11 +533,11 @@ portal:
                 "ethnicity",
                 "age_at_index",
                 "smoking_frequency",
-                "aki_status",
-                "days_to_aki",
-                "days_90_aki",
+                "irAE_status",
+                "days_to_irAE",
+                "days_90_irAE",
                 "days_90_survival",
-                "days_180_aki",
+                "days_180_irAE",
                 "days_180_survival",
                 "laboratory_test"
               ]
@@ -615,14 +615,14 @@ portal:
                 "chartType":"fullPie",
                 "title": "Days 180 Survival"
               },
-              "days_90_aki": {
+              "days_90_irAE": {
                 "chartType": "pie",
-                "title": "Days 90 AKI"
+                "title": "Days 90 irAE"
               },
       
-              "days_180_aki": {
+              "days_180_irAE": {
                 "chartType":"pie",
-                "title": "Days 180 AKI"
+                "title": "Days 180 irAE"
               }
             },
             "filters": {
@@ -665,11 +665,11 @@ portal:
                 {
                   "title": "Outcome",
                   "fields":[
-                    "aki_status",
-                    "days_to_aki",
-                    "days_90_aki",
+                    "irAE_status",
+                    "days_to_irAE",
+                    "days_90_irAE",
                     "days_90_survival",
-                    "days_180_aki",
+                    "days_180_irAE",
                     "days_180_survival"
                   ]
                 }
@@ -765,14 +765,14 @@ portal:
                 "chartType":"fullPie",
                 "title": "Days 180 Survival"
               },
-              "days_90_aki": {
+              "days_90_irAE": {
                 "chartType": "pie",
-                "title": "Days 90 AKI"
+                "title": "Days 90 irAE"
               },
       
-              "days_180_aki": {
+              "days_180_irAE": {
                 "chartType":"pie",
-                "title": "Days 180 AKI"
+                "title": "Days 180 irAE"
               }
             },
             "filters": {
@@ -811,11 +811,11 @@ portal:
                 {
                   "title": "Outcome",
                   "fields":[
-                    "aki_status",
-                    "days_to_aki",
-                    "days_90_aki",
+                    "irAE_status",
+                    "days_to_irAE",
+                    "days_90_irAE",
                     "days_90_survival",
-                    "days_180_aki",
+                    "days_180_irAE",
                     "days_180_survival"
                   ]
                 }
@@ -830,7 +830,7 @@ portal:
                 "pat_id",
                 "specimen_type",
                 "visit_day",
-                "aki_status"
+                "irAE_status"
               ]
             },
             "dropdowns": {},
@@ -900,13 +900,13 @@ portal:
                 "chartType":"fullPie",
                 "title": "Days 180 Survival"
               },
-              "days_90_aki": {
+              "days_90_irAE": {
                 "chartType": "pie",
-                "title": "Days 90 AKI"
+                "title": "Days 90 irAE"
               },
-              "days_180_aki": {
+              "days_180_irAE": {
                 "chartType":"pie",
-                "title": "Days 180 AKI"
+                "title": "Days 180 irAE"
               }
             },
             "filters": {
@@ -944,11 +944,11 @@ portal:
                 {
                   "title": "Outcome",
                   "fields":[
-                    "aki_status",
-                    "days_to_aki",
-                    "days_90_aki",
+                    "irAE_status",
+                    "days_to_irAE",
+                    "days_90_irAE",
                     "days_90_survival",
-                    "days_180_aki",
+                    "days_180_irAE",
                     "days_180_survival"
                   ]
                 }
@@ -966,7 +966,7 @@ portal:
                 "laboratory_test",
                 "test_value",
                 "test_result",
-                "aki_status",
+                "irAE_status",
                 "visit_day"
               ]
             },
@@ -1401,12 +1401,12 @@ etl:
           # - name: cohort
           - name: study_site
           - name: actarm
-          - name: aki_status
-          - name: days_180_aki
+          - name: irAE_status
+          - name: days_180_irAE
           - name: days_180_survival
-          - name: days_90_aki
+          - name: days_90_irAE
           - name: days_90_survival
-          - name: days_to_aki
+          - name: days_to_irAE
         parent_props:
           - path: studies[study_name, study_id:submitter_id]
         flatten_props:
@@ -1455,7 +1455,7 @@ etl:
 
       - name: ardac_follow_up
         parent_props:
-          - path: cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, aki_status, days_180_aki, days_180_survival, days_90_aki, days_90_survival, days_to_aki].studies[study_name, study_id:submitter_id]
+          - path: cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_irAE].studies[study_name, study_id:submitter_id]
           - path: demographics[gender, race, ethnicity, year_of_birth, age_at_index]
             value_mappings:
               - white: White
@@ -1505,7 +1505,7 @@ etl:
           - name: specimen_type
         parent_props:
           - path: follow_ups[follow_up_id:submitter_id, visit_day].cases[pat_id:submitter_id, case_arm:actarm].studies[study_name, study_id:submitter_id]
-          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, aki_status, days_180_aki, days_180_survival, days_90_aki, days_90_survival, days_to_aki]
+          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_irAE]
           - path: labs[lab_id:submitter_id, lab_name:name_of_institute]
           - path: follow_ups.demographics[gender, race, ethnicity, year_of_birth, age_at_index]
 
@@ -1515,7 +1515,7 @@ etl:
         root: molecular_test
         parent_props:
           - path: follow_ups[follow_up_id:submitter_id, visit_day].cases[pat_id:submitter_id, case_arm:actarm].studies[study_name, study_id:submitter_id]
-          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, aki_status, days_180_aki, days_180_survival, days_90_aki, days_90_survival, days_to_aki]
+          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_irAE]
           - path: follow_ups.demographics[gender, race, ethnicity, year_of_birth, age_at_index]
           - path: aliquots.labs[lab_id:submitter_id, lab_name:name_of_institute]
         props:
@@ -1532,7 +1532,7 @@ etl:
         root: molecular_test
         parent_props:
           - path: follow_ups[follow_up_id:submitter_id, visit_day].cases[pat_id:submitter_id, case_arm:actarm].studies[study_name, study_id:submitter_id]
-          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, aki_status, days_180_aki, days_180_survival, days_90_aki, days_90_survival, days_to_aki]
+          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_irAE]
           - path: follow_ups.demographics[gender, race, ethnicity, year_of_birth, age_at_index]
           - path: aliquots.labs[lab_id:submitter_id, lab_name:name_of_institute]
         props:

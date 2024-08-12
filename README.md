@@ -16,6 +16,7 @@ kubectl scale --replicas=3 deployment/sheepdog-deployment
 But remember to scale back when finished:
 ```
 kubectl scale --replicas=1 deployment/sheepdog-deployment
+kubectl delete pod --field-selector=status.phase==Succeeded
 ```
 
 Now the ETL job needs to be started:
