@@ -8,6 +8,11 @@ sudo sysctl -w vm.max_map_count=262144
 helm upgrade --install gen3 ./helm/gen3 -f ./ufcdc_config/gen3_config_new.yaml
 ```
 Then create program node and project node, and instructions is same as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md), then upload tsv files in [demo-data](./demo-data) folder following same guidelines as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md).
+```
+minikube service revproxy-service --url
+sudo vi /etc/caddy/Caddyfile 
+sudo systemctl restart caddy
+```
 
 During data uploading process, you may encounter issues with not having enough sheepdog services to handle large volumns of uploading, you may scale up number of sheepdog services:
 ```
@@ -16,6 +21,7 @@ kubectl scale --replicas=3 deployment/sheepdog-deployment
 But remember to scale back when finished:
 ```
 kubectl scale --replicas=1 deployment/sheepdog-deployment
+kubectl delete pod --field-selector=status.phase==Succeeded
 ```
 
 Now the ETL job needs to be started:
@@ -27,7 +33,7 @@ Verify the job for etl completes in k9s. You can also curl the indices on the el
 to replace the pod name with what is in k9s)
 
 ```
-kubectl exec -it portal-deployment-58d5b54b89-sfd5w -- bash
+kubectl exec -it portal-deployment-5f84b7b6b8-wlzlh -- bash
 curl -X GET http://gen3-elasticsearch-master:9200/_cat/indices?v
 ```
 
@@ -52,3 +58,7 @@ The original tutorials for deploying gen3-helm: [https://github.com/uc-cdis/gen3
 kubectl delete pod --field-selector=status.phase==Succeeded
 
 kubectl scale --replicas=3 deployment/sheepdog-deployment
+
+
+
+  tierAccessLevel: "regular"

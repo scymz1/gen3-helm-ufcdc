@@ -2,6 +2,7 @@ global:
   hostname: ufcdc-portal.org
   dictionaryUrl: https://scymz1.github.io/cancer_commons_dictionary/schema.json
 
+
 fence: 
   FENCE_CONFIG:
     MOCK_GOOGLE_AUTH: false
@@ -33,7 +34,6 @@ fence:
         - CC_admin
         users:
         - minghaozhou01@gmail.com
-        - qsong1@ufl.edu
 
       resources:
       - name: audit
@@ -65,16 +65,6 @@ fence:
           - name: projects
             subresources:
             - name: demo_data_project
-        - name: uk_biobank
-          subresources:
-          - name: projects
-            subresources:
-            - name: demo_data_project_ukb
-        - name: adni
-          subresources:
-          - name: projects
-            subresources:
-            - name: demo_data_project_adni
 
 
       policies:
@@ -141,10 +131,6 @@ fence:
         resource_paths:
         - /programs/cancer_commons_program
         - /programs/cancer_commons_program/projects/demo_data_project
-        - /programs/uk_biobank
-        - /programs/uk_biobank/projects/demo_data_project_ukb
-        - /programs/adni
-        - /programs/adni/projects/demo_data_project_adni
 
       roles:
       - id: audit_reader
@@ -234,7 +220,6 @@ fence:
       alwalsh@iu.edu: {}
       rhaussin@iu.edu: {}
       jinn@iu.edu: {}
-      qsong1@ufl.edu: {}
       minghaozhou01@gmail.com:
         admin: true
         policies:
@@ -423,10 +408,6 @@ portal:
             "#FFD44E", "#FFB74C", "#FF8A65", "#A0877F"],
           "categorical2Colors": ["#E57272", "#B967C7"]
         },
-        "featureFlags": {
-          "explorer": true,
-          "explorerPublic": false
-        },
         "explorerConfig": [
           {
             "tabTitle": "Participants",
@@ -459,17 +440,17 @@ portal:
                 "chartType": "fullPie",
                 "title": "Visits (day)"
               },
-              "drinking_frequency": {
+              "smoking_frequency": {
                 "chartType":"bar",
-                "title": "Drinking Frequency in the past year"
+                "title": "Smoking Frequency in the past year"
               },
-              "drinks_per_day": {
+              "smokes_per_day": {
                 "chartType":"bar",
-                "title": "Drinks per Day in the past year"
+                "title": "Smokes per Day in the past year"
               },
-              "frequency_of_heavy_drinking": {
+              "frequency_of_heavy_smoking": {
                 "chartType":"bar",
-                "title": "Frequency Of Heavy Drinking in the past year"
+                "title": "Frequency Of Heavy Smoking in the past year"
               },
               "irAE_status": {
                 "chartType": "fullPie",
@@ -499,6 +480,7 @@ portal:
                   "fields":[
                     "project_id",
                     "study_name",
+                    "group",
                     "actarm"
                   ]
                 },
@@ -514,17 +496,20 @@ portal:
                 {
                   "title": "Behavior",
                   "fields":[
-                    "drinking_frequency",
-                    "drinks_per_day",
-                    "frequency_of_heavy_drinking"
+                    "smoking_frequency",
+                    "smokes_per_day",
+                    "frequency_of_heavy_smoking"
                   ]
                 },
                 {
                   "title": "Outcome",
                   "fields":[
-                    "days_to_death",
+                    "irAE_status",
+                    "days_to_irAE",
                     "days_90_survival",
-                    "days_180_survival"
+                    "days_180_survival",
+                    "days_90_irAE",
+                    "days_180_irAE"
                   ]
                 },
                 {
@@ -548,11 +533,9 @@ portal:
                 "actarm",
                 "ethnicity",
                 "age_at_index",
-                "drinking_frequency",
-                "drinks_per_day",
-                "frequency_of_heavy_drinking",
+                "smoking_frequency",
                 "irAE_status",
-                "days_to_death",
+                "days_to_irAE",
                 "days_90_irAE",
                 "days_90_survival",
                 "days_180_irAE",
@@ -564,7 +547,6 @@ portal:
             "buttons": [],
             "guppyConfig": {
               "dataType": "case",
-              "tierAccessLevel": "private",
               "nodeCountTitle": "Participants",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project" },
@@ -577,14 +559,9 @@ portal:
                 { "field": "gender", "name": "sex"},
                 {"field":"observational", "name": "Observational"},
                 {"field": "clinical_trial", "name": "Clinical Trial" },
-                { "field": "drinking_frequency", "name": "Drinking frequency in the past year"},
-                { "field": "drinks_per_day", "name": "Drinks per day in the past year"},
-                { "field": "frequency_of_heavy_drinking", "name": "Frequency of heavy Drinking in the past year"},
-                { "field": "irAE_status", "name": "irAE status"},
-                { "field": "days_to_death", "name": "days to Survival"},
-                { "field": "days_90_irAE", "name": "days 90 irAE"},
-                { "field": "days_90_survival", "name": "days 90 survival"},
-                { "field": "days_180_irAE", "name": "days 180 irAE"}
+                { "field": "smoking_frequency", "name": "Smoking frequency in the past year"},
+                { "field": "smokes_per_day", "name": "Smokes per day in the past year"},
+                { "field": "frequency_of_heavy_smoking", "name": "Frequency of heavy Smoking in the past year"}
               ],
               "manifestMapping": {
                 "resourceIndexType": "file",
@@ -689,8 +666,11 @@ portal:
                 {
                   "title": "Outcome",
                   "fields":[
-                    "days_to_death",
+                    "irAE_status",
+                    "days_to_irAE",
+                    "days_90_irAE",
                     "days_90_survival",
+                    "days_180_irAE",
                     "days_180_survival"
                   ]
                 }
@@ -717,7 +697,6 @@ portal:
             "buttons": [],
             "guppyConfig": {
               "dataType": "follow_up",
-              "tierAccessLevel": "private",
               "nodeCountTitle": "Follow_ups",
               "fieldMapping": [
                 { "field": "pat_id", "name": "Patient Id"},
@@ -728,12 +707,7 @@ portal:
                 { "field": "visit_day", "name": "Assessment Date" },
                 {"field":"observational", "name": "Observational"},
                 {"field": "clinical_trial", "name": "Clinical Trial" },
-                { "field": "gender", "name": "sex"},
-                { "field": "irAE_status", "name": "irAE status"},
-                { "field": "days_to_death", "name": "days to Survival"},
-                { "field": "days_90_irAE", "name": "days 90 irAE"},
-                { "field": "days_90_survival", "name": "days 90 survival"},
-                { "field": "days_180_irAE", "name": "days 180 irAE"}
+                { "field": "gender", "name": "sex"}
               ],
               "manifestMapping": {
                 "resourceIndexType": "file",
@@ -838,8 +812,11 @@ portal:
                 {
                   "title": "Outcome",
                   "fields":[
-                    "days_to_death",
+                    "irAE_status",
+                    "days_to_irAE",
+                    "days_90_irAE",
                     "days_90_survival",
+                    "days_180_irAE",
                     "days_180_survival"
                   ]
                 }
@@ -861,17 +838,15 @@ portal:
             "buttons": [],
             "guppyConfig": {
               "dataType": "aliquot",
-              "tierAccessLevel": "private",
               "nodeCountTitle": "Biospecimens",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project" },
                 { "field": "pat_id", "name": "Patient Id" },
                 { "field": "visit_day", "name": "Assessment Date" },
                 { "field": "study_site", "name": "Clinical site"},
-                { "field": "observational", "name": "Observational"},
-                { "field": "clinical_trial", "name": "Clinical Trial" },
-                { "field": "gender", "name": "sex"},
-                { "field": "days_to_death", "name": "days to Survival"}
+                {"field":"observational", "name": "Observational"},
+                {"field": "clinical_trial", "name": "Clinical Trial" },
+                { "field": "gender", "name": "sex"}
               ],
               "manifestMapping": {
                 "resourceIndexType": "file",
@@ -971,8 +946,11 @@ portal:
                 {
                   "title": "Outcome",
                   "fields":[
-                    "days_to_death",
+                    "irAE_status",
+                    "days_to_irAE",
+                    "days_90_irAE",
                     "days_90_survival",
+                    "days_180_irAE",
                     "days_180_survival"
                   ]
                 }
@@ -998,16 +976,14 @@ portal:
             "buttons": [],
             "guppyConfig": {
               "dataType": "molecular_test",
-              "tierAccessLevel": "private",
               "nodeCountTitle": "Lab Results",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project" },
                 { "field": "pat_id", "name": "Patient Id" },
                 { "field": "visit_day", "name": "Assessment Date" },
                 { "field": "study_site", "name": "Clinical site"},
-                { "field": "observational", "name": "Observational"},
-                { "field": "clinical_trial", "name": "Clinical Trial" },
-                { "field": "days_to_death", "name": "days to Survival"},
+                {"field":"observational", "name": "Observational"},
+                {"field": "clinical_trial", "name": "Clinical Trial" },
                 { "field": "gender", "name": "sex"}
               ],
               "manifestMapping": {
@@ -1039,6 +1015,18 @@ portal:
                 "chartType": "fullPie",
                 "title": "Genomic Profile Data Format"
               },
+              "gene_expression_experimental_strategy": {
+                "chartType": "bar",
+                "title": "Gene Expression Experimental Strategy"
+              },
+              "gene_expression_data_category": {
+                "chartType": "pie",
+                "title": "Gene Expression Data Category"
+              },
+              "gene_expression_data_format": {
+                "chartType": "fullPie",
+                "title": "Gene Expression Data Format"
+              },
               "slide_image_data_category": {
                 "chartType": "pie",
                 "title": "Slide Image Data Category"
@@ -1050,6 +1038,21 @@ portal:
             },
             "filters": {
               "tabs": [
+                {
+                  "title":"Genomic Metadata",
+                  "fields": [
+                    "project_id"
+                  ]
+                },
+                {
+                  "title": "Gene Expression",
+                  "fields":[
+                    "project_id",
+                    "gene_expression_experimental_strategy",
+                    "gene_expression_data_category",
+                    "gene_expression_data_format"
+                  ]
+                },
                 {
                   "title": "Genomic Profile",
                   "fields":[
@@ -1066,6 +1069,14 @@ portal:
               "fields": [
                 "project_id",
                 "core_metadata_collections_id",
+                "gene_expression_id",
+                "gene_expression_data_category",
+                "gene_expression_data_format",
+                "gene_expression_data_type",
+                "gene_expression_experimental_strategy",
+                "gene_expression_file_name",
+                "gene_expression_file_size",
+                "gene_expression_md5sum",
                 "genomic_data_category",
                 "genomic_data_format",
                 "genomic_data_type",
@@ -1078,11 +1089,18 @@ portal:
             "buttons": [],
             "guppyConfig": {
               "dataType": "core_metadata_collection",
-              "tierAccessLevel": "private",
               "nodeCountTitle": "Metadata Collections",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project id" },
                 { "field": "core_metadata_collections_id", "name": "Core Metadata Collections ID" },
+                { "field": "gene_expression_id", "name": "Gene Expression ID" },
+                { "field": "gene_expression_data_category", "name": "Gene Expression Data Category" },
+                { "field": "gene_expression_data_format", "name": "Gene Expression Data Format" },
+                { "field": "gene_expression_data_type", "name": "Gene Expression Data Type" },
+                { "field": "gene_expression_experimental_strategy", "name": "Gene Expression Experimental Strategy" },
+                { "field": "gene_expression_file_name", "name": "Gene Expression File Name" },
+                { "field": "gene_expression_file_size", "name": "Gene Expression File Size" },
+                { "field": "gene_expression_md5sum", "name": "Gene Expression md5sum" },
                 { "field": "genomic_data_category", "name": "Genomic Data Category" },
                 { "field": "genomic_data_format", "name": "Genomic Data Format" },
                 { "field": "genomic_data_type", "name": "Genomic Data Type" },
@@ -1118,6 +1136,12 @@ portal:
             "filters": {
               "tabs": [
                 {
+                  "title":"Image Metadata",
+                  "fields": [
+                    "core_metadata_collections_id"
+                  ]
+                },
+                {
                   "title": "Slide Image",
                   "fields":[
                     "project_id",
@@ -1144,7 +1168,6 @@ portal:
             "buttons": [],
             "guppyConfig": {
               "dataType": "slide_image",
-              "tierAccessLevel": "private",
               "nodeCountTitle": "Metadata Collections",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project id" },
@@ -1463,7 +1486,7 @@ etl:
           - name: days_180_survival
           - name: days_90_irAE
           - name: days_90_survival
-          - name: days_to_death
+          - name: days_to_irAE
         parent_props:
           - path: studies[study_name, study_id:submitter_id]
         flatten_props:
@@ -1490,11 +1513,11 @@ etl:
               - name: age_at_index
           - path: audits
             props:
-              - name: drinking_frequency
+              - name: smoking_frequency
                 src: adt0101
-              - name: drinks_per_day
+              - name: smokes_per_day
                 src: adt0102
-              - name: frequency_of_heavy_drinking
+              - name: frequency_of_heavy_smoking
                 src: adt0103
         aggregated_props:
           - name: visit_day
@@ -1512,7 +1535,7 @@ etl:
 
       - name: ardac_follow_up
         parent_props:
-          - path: cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_death].studies[study_name, study_id:submitter_id]
+          - path: cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_irAE].studies[study_name, study_id:submitter_id]
           - path: demographics[gender, race, ethnicity, year_of_birth, age_at_index]
             value_mappings:
               - white: White
@@ -1562,7 +1585,7 @@ etl:
           - name: specimen_type
         parent_props:
           - path: follow_ups[follow_up_id:submitter_id, visit_day].cases[pat_id:submitter_id, case_arm:actarm].studies[study_name, study_id:submitter_id]
-          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_death]
+          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_irAE]
           - path: labs[lab_id:submitter_id, lab_name:name_of_institute]
           - path: follow_ups.demographics[gender, race, ethnicity, year_of_birth, age_at_index]
 
@@ -1572,7 +1595,7 @@ etl:
         root: molecular_test
         parent_props:
           - path: follow_ups[follow_up_id:submitter_id, visit_day].cases[pat_id:submitter_id, case_arm:actarm].studies[study_name, study_id:submitter_id]
-          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_death]
+          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_irAE]
           - path: follow_ups.demographics[gender, race, ethnicity, year_of_birth, age_at_index]
           - path: aliquots.labs[lab_id:submitter_id, lab_name:name_of_institute]
         props:
@@ -1589,7 +1612,7 @@ etl:
         root: molecular_test
         parent_props:
           - path: follow_ups[follow_up_id:submitter_id, visit_day].cases[pat_id:submitter_id, case_arm:actarm].studies[study_name, study_id:submitter_id]
-          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_death]
+          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_irAE]
           - path: follow_ups.demographics[gender, race, ethnicity, year_of_birth, age_at_index]
           - path: aliquots.labs[lab_id:submitter_id, lab_name:name_of_institute]
         props:

@@ -17,6 +17,8 @@ indices:
     type: molecular_test
   - index: ufcdc_meta_data_collection
     type: core_metadata_collection
+  - index: ufcdc_slide_image
+    type: slide_image
 # -- (string) The Elasticsearch configuration index
 configIndex:
   - ardac_case-array-config
@@ -24,5 +26,6 @@ configIndex:
   - ardac_biospecimen-array-config
   - ardac_lab_result-array-config
   - ufcdc_meta_data_collection-array-config
+  - ufcdc_slide_image-array-config
 # -- (string) The field used for access control and authorization filters
 authFilterField: auth_resource_path
