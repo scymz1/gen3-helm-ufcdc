@@ -33,7 +33,7 @@ Verify the job for etl completes in k9s. You can also curl the indices on the el
 to replace the pod name with what is in k9s)
 
 ```
-kubectl exec -it portal-deployment-5f84b7b6b8-wlzlh -- bash
+kubectl exec -it portal-deployment-5f84b7b6b8-g5chw -- bash
 curl -X GET http://gen3-elasticsearch-master:9200/_cat/indices?v
 ```
 

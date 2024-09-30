@@ -1,5 +1,5 @@
 global:
-  hostname: ufcdc-portal.org
+  hostname: ufcdc-dev.cis230185.projects.jetstream-cloud.org
   dictionaryUrl: https://scymz1.github.io/cancer_commons_dictionary/schema.json
 
 fence: 
