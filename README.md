@@ -5,7 +5,7 @@ This is uf cancer-data-center application development code using gen3. To start 
 ```
 minikube start --kubernetes-version v1.27.11 --memory 24g --cpus 4
 sudo sysctl -w vm.max_map_count=262144
-helm upgrade --install gen3 ./helm/gen3 -f ./ufcdc_config/gen3_config_new.yaml
+helm upgrade --install gen3 ./helm/gen3 -f ./ufcdc_config/major_config/gen3_config_v6.yaml
 ```
 Then create program node and project node, and instructions is same as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md), then upload tsv files in [demo-data](./demo-data) folder following same guidelines as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md).
 ```
@@ -48,7 +48,7 @@ now start guppy:
 
 ```
 in ./helm/guppy:  helm dependency update;helm dependency build
-in ./gen3-helm-ufcdc: helm upgrade --install guppy ./helm/guppy -f ./ufcdc_config/rancher-desktop-values-guppy.yaml
+in ./gen3-helm-ufcdc: helm upgrade --install guppy ./helm/guppy -f ./ufcdc_config/guppy_config/rancher-desktop-values-guppy.yaml
 ```
 
 

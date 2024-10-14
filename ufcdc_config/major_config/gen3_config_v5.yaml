@@ -7,8 +7,8 @@ fence:
     MOCK_GOOGLE_AUTH: false
     OPENID_CONNECT:
       google:
-        client_id: xxx
-        client_secret: xxx
+        client_id: xxxx
+        client_secret: xxxx
   USER_YAML: |
     cloud_providers: {}
     authz:
@@ -60,21 +60,13 @@ fence:
       - name: open
       - name: programs
         subresources:
-        - name: cancer_commons_program
+        - name: Project
           subresources:
           - name: projects
             subresources:
-            - name: demo_data_project
-        - name: uk_biobank
-          subresources:
-          - name: projects
-            subresources:
-            - name: demo_data_project_ukb
-        - name: adni
-          subresources:
-          - name: projects
-            subresources:
-            - name: demo_data_project_adni
+            - name: demo
+            - name: UKB
+            - name: ADNI
 
 
       policies:
@@ -139,12 +131,10 @@ fence:
         - storage_reader
         - storage_writer
         resource_paths:
-        - /programs/cancer_commons_program
-        - /programs/cancer_commons_program/projects/demo_data_project
-        - /programs/uk_biobank
-        - /programs/uk_biobank/projects/demo_data_project_ukb
-        - /programs/adni
-        - /programs/adni/projects/demo_data_project_adni
+        - /programs/Project
+        - /programs/Project/projects/demo
+        - /programs/Project/projects/UKB
+        - /programs/Project/projects/ADNI
 
       roles:
       - id: audit_reader

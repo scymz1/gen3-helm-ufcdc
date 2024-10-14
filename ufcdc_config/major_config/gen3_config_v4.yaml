@@ -1,0 +1,1721 @@
+global:
+  hostname: ufcdc-portal.org
+  dictionaryUrl: https://scymz1.github.io/cancer_commons_dictionary/schema.json
+
+fence: 
+  FENCE_CONFIG:
+    MOCK_GOOGLE_AUTH: false
+    OPENID_CONNECT:
+      google:
+        client_id: xxxx
+        client_secret: xxxx
+  USER_YAML: |
+    cloud_providers: {}
+    authz:
+      # policies automatically given to anyone, even if they are not authenticated
+      anonymous_policies: []
+
+      # policies automatically given to authenticated users (in addition to their other policies)
+      all_users_policies: []
+
+      groups:
+      # ARDaC administrators
+      # Full system access, including data upload.
+      - name: admins
+        policies:
+        - workspace
+        - data_upload
+        - services.sheepdog-admin
+        - indexd_admin
+        - open_data_reader
+        - all_programs_reader
+        - audit_reader
+        - CC_admin
+        users:
+        - minghaozhou01@gmail.com
+        - qsong1@ufl.edu
+
+      resources:
+      - name: audit
+        subresources:
+        - name: presigned_url
+        - name: login
+      - name: workspace
+      - name: data_file
+      - name: services
+        subresources:
+        - name: sheepdog
+          subresources:
+          - name: submission
+            subresources:
+            - name: program
+            - name: project
+        - name: indexd
+          subresources:
+            - name: admin
+        - name: audit
+          subresources:
+            - name: presigned_url
+            - name: login
+      - name: open
+      - name: programs
+        subresources:
+        - name: demo
+          subresources:
+          - name: projects
+            subresources:
+            - name: demo
+        - name: ukb
+          subresources:
+          - name: projects
+            subresources:
+            - name: ukb
+        - name: adni
+          subresources:
+          - name: projects
+            subresources:
+            - name: adni
+
+
+      policies:
+      - id: audit_reader
+        role_ids:
+        - audit_reader
+        resource_paths:
+        - /services/audit
+      - id: presigned_url_audit_reader
+        role_ids:
+        - audit_reader
+        resource_paths:
+        - /services/audit/presigned_url
+      - id: login_audit_reader
+        role_ids:
+        - audit_reader
+        resource_paths:
+        - /services/audit/login
+      - id: workspace
+        description: be able to use workspace
+        resource_paths:
+        - /workspace
+        role_ids:
+        - workspace_user
+      - id: data_upload
+        description: upload raw data files to S3
+        role_ids:
+        - file_uploader
+        resource_paths:
+        - /data_file
+      - id: services.sheepdog-admin
+        description: CRUD access to programs and projects
+        role_ids:
+          - sheepdog_admin
+        resource_paths:
+          - /services/sheepdog/submission/program
+          - /services/sheepdog/submission/project
+      - id: indexd_admin
+        description: full access to indexd API
+        role_ids:
+          - indexd_admin
+        resource_paths:
+          - /programs
+      - id: open_data_reader
+        role_ids:
+          - reader
+          - storage_reader
+        resource_paths:
+        - /open
+      - id: all_programs_reader
+        role_ids:
+        - reader
+        - storage_reader
+        resource_paths:
+        - /programs
+      - id: CC_admin
+        role_ids:
+        - reader
+        - creator
+        - updater
+        - deleter
+        - storage_reader
+        - storage_writer
+        resource_paths:
+        - /programs/demo
+        - /programs/demo/projects/demo
+        - /programs/ukb
+        - /programs/ukb/projects/ukb
+        - /programs/adni
+        - /programs/adni/projects/adni
+
+      roles:
+      - id: audit_reader
+        permissions:
+        - id: audit_reader_action
+          action:
+            service: audit
+            method: read
+      - id: file_uploader
+        permissions:
+        - id: file_upload
+          action:
+            service: fence
+            method: file_upload
+      - id: workspace_user
+        permissions:
+        - id: workspace_access
+          action:
+            service: jupyterhub
+            method: access
+      - id: sheepdog_admin
+        description: CRUD access to programs and projects
+        permissions:
+        - id: sheepdog_admin_action
+          action:
+            service: sheepdog
+            method: '*'
+      - id: indexd_admin
+        description: full access to indexd API
+        permissions:
+        - id: indexd_admin
+          action:
+            service: indexd
+            method: '*'
+      - id: admin
+        permissions:
+          - id: admin
+            action:
+              service: '*'
+              method: '*'
+      - id: creator
+        permissions:
+          - id: creator
+            action:
+              service: '*'
+              method: create
+      - id: reader
+        permissions:
+          - id: reader
+            action:
+              service: '*'
+              method: read
+      - id: updater
+        permissions:
+          - id: updater
+            action:
+              service: '*'
+              method: update
+      - id: deleter
+        permissions:
+          - id: deleter
+            action:
+              service: '*'
+              method: delete
+      - id: storage_writer
+        permissions:
+          - id: storage_creator
+            action:
+              service: '*'
+              method: write-storage
+      - id: storage_reader
+        permissions:
+          - id: storage_reader
+            action:
+              service: '*'
+              method: read-storage
+
+    clients:
+      wts:
+        policies:
+        - all_programs_reader
+        - open_data_reader
+        - CC_admin
+
+    users:
+      abretts@iu.edu: {}
+      alwalsh@iu.edu: {}
+      rhaussin@iu.edu: {}
+      jinn@iu.edu: {}
+      qsong1@ufl.edu: {}
+      minghaozhou01@gmail.com:
+        admin: true
+        policies:
+        - data_upload
+        - workspace
+        - services.sheepdog-admin
+        - indexd_admin
+        - open_data_reader
+        - all_programs_reader
+        - audit_reader
+        - CC_admin
+
+portal:
+  image:
+    repository: minghaozhou01/cancer_commons_portal
+    tag: v3
+  gitops:
+    json: |
+      {
+        "components": {
+          "appName": "Cancer Data Commons Portal",
+          "graphql": {
+            "boardCounts": [
+              {
+                "graphql": "_study_count",
+                "name": "Study",
+                "plural": "Studies"
+              },
+              {
+                "graphql": "_case_count",
+                "name": "Participant",
+                "plural": "Participants"
+              },
+              {
+                "graphql": "_follow_up_count",
+                "name": "Follow up",
+                "plural": "Follow_ups"
+              }
+            ],
+            "chartCounts": [
+              {
+                "graphql": "_case_count",
+                "name": "Case"
+              },
+              {
+                "graphql": "_follow_up_count",
+                "name": "Follow up"
+              }
+            ],
+            "projectDetails": "boardCounts"
+          },
+          "index":{
+            "introduction":{
+              "heading":"Cancer Data Commons",
+              "text":"The Cancer Data Commons supports the management, analysis and sharing of data for the research community.",
+              "link":"/submission"
+            },
+            "buttons":[
+              {
+                "name": "Define Data Field",
+                "icon": "data-field-define",
+                "body": "The Cancer Data Commons define the data in a general way. Please study the dictionary before you start browsing.",
+                "link": "/DD",
+                "label": "Learn more"
+              },
+              {
+                "name": "Explore Data",
+                "icon": "data-explore",
+                "body": "The Exploration Page allows filtering data for targeted visualization, which gives you insights and a clear overview under selected factors.",
+                "link": "/explorer",
+                "label": "Explore data"
+              },
+              {
+                "name": "Access Data",
+                "icon": "data-access",
+                "body": "Use our selected tool to filter out the data you need.",
+                "link": "/query",
+                "label": "Query data"
+              },
+              {
+                "name": "Submit Data",
+                "icon": "data-submit",
+                "body": "Submit Data based on the GDC Data Dictionary.",
+                "link": "/submission",
+                "label": "Submit data"
+              }
+            ],
+            "homepageChartNodes": [
+                  {
+                    "node": "study",
+                    "name": "Studies"
+                  },
+                  {
+                    "node": "case",
+                    "name": "Participants"
+                  },
+                  {
+                    "node": "follow_up",
+                    "name": "Follow_ups"
+                  }
+              ]
+          },
+          "navigation": {
+            "title": "Cancer Data Commons",
+            "items": [
+              {
+                "icon": "dictionary",
+                "link": "/DD",
+                "color": "#421C52",
+                "name": "Dictionary",
+                "tooltip": ""
+              },
+              {
+                "icon": "exploration",
+                "link": "/explorer",
+                "name": "Exploration",
+                "tooltip": ""
+              },
+              {
+                "icon": "files",
+                "link": "/files",
+                "name": "Files",
+                "tooltip": ""
+              },
+              {
+                "icon": "query",
+                "link": "/query",
+                "name": "Query",
+                "tooltip": ""
+              },
+              {
+                "icon": "workspace",
+                "link": "#hostname#workspace/",
+                "name": "Workspace",
+                "tooltip": ""
+              },
+              {
+                "icon": "profile",
+                "link": "/identity",
+                "name": "Profile",
+                "color": "#A2A2A2",
+                "tooltip": ""
+              }
+            ]
+          },
+      
+          "topBar": {
+            "color":"#005496",
+            "items": [
+              {
+                "icon": "upload",
+                "link": "/submission",
+                "name": "Submit Data"
+              },
+              {
+                "link": "https://hobi.med.ufl.edu/profile/song-qianqian/",
+                "name": "Contact"
+              }
+            ]
+          },
+      
+          "login": {
+            "title": "Cancer Data Commons",
+            "subTitle": "UF Health Cancer Center",
+            "text": "The UF Cancer Data Commons is designed for integrative querying and visualization of the clinical, biospecimen, and molecular data from clinical trials and research studies under the findable, accessible, interoperable, and reusable (FAIR) principles.",
+            "contact": "If you have any question please contact the UF Development Team at ",
+            "email": "minghao.zhou@ufl.edu",
+            "image": "/../../../../custom/sponsors/gitops-sponsors/ardac_gene"
+          },
+          "footerLogos": [
+            {
+              "src": "/src/img/ufhcc_logo_Page_2.png",
+              "href": "http://www.alchepnet.org/",
+              "alt": "Alchepnet Data Commons"
+            },
+            {
+              "src": "/src/img/CancerCenter_h_RGB_COLOR_Badge_180x72.png",
+              "href": "http://www.alchepnet.org/",
+              "alt": "Alchepnet Data Commons"
+            }
+          ],
+          "categorical9Colors": [
+            "#E57272", "#F06192", "#B967C7", "#9474CC",
+            "#7985CB", "#64B4F6", "#4EC3F7", "#4CD0E0", "#4CB6AC",
+            "#80C684", "#ADD480", "#DCE674", "#FFF176", "#FFF176",
+            "#FFD44E", "#FFB74C", "#FF8A65", "#A0877F"],
+          "categorical2Colors": ["#E57272", "#B967C7"]
+        },
+        "featureFlags": {
+          "explorer": true,
+          "explorerPublic": false
+        },
+        "explorerConfig": [
+          {
+            "tabTitle": "Participants",
+            "charts": {
+              "project_id": {
+                "chartType": "count",
+                "title": "Projects"
+              },
+              "study_id": {
+                "chartType": "count",
+                "title": "Studys"
+              },
+              "gender": {
+                "chartType": "fullPie",
+                "title": "Sex"
+              },
+              "race": {
+                "chartType": "bar",
+                "title": "Race"
+              },
+              "ethnicity": {
+                "chartType": "pie",
+                "title": "Ethnicity"
+              },
+              "study_site": {
+                "chartType": "pie",
+                "title": "Study Site"
+              },
+              "visit_day_set": {
+                "chartType": "fullPie",
+                "title": "Visits (day)"
+              },
+              "drinking_frequency": {
+                "chartType":"bar",
+                "title": "Drinking Frequency in the past year"
+              },
+              "drinks_per_day": {
+                "chartType":"bar",
+                "title": "Drinks per Day in the past year"
+              },
+              "frequency_of_heavy_drinking": {
+                "chartType":"bar",
+                "title": "Frequency Of Heavy Drinking in the past year"
+              },
+              "irAE_status": {
+                "chartType": "fullPie",
+                "title": "irAE Status"
+              },
+              "days_90_survival": {
+                "chartType":"fullPie",
+                "title": "Days 90 Survival"
+              },
+              "days_180_survival": {
+                "chartType":"fullPie",
+                "title": "Days 180 Survival"
+              },
+              "days_90_irAE": {
+                "chartType": "pie",
+                "title": "Days 90 irAE"
+              },
+              "days_180_irAE": {
+                "chartType":"pie",
+                "title": "Days 180 irAE"
+              }
+            },
+            "filters": {
+              "tabs": [
+                {
+                  "title": "Study",
+                  "fields":[
+                    "project_id",
+                    "study_name",
+                    "actarm"
+                  ]
+                },
+                {
+                  "title": "Participant",
+                  "fields":[
+                    "gender",
+                    "race",
+                    "ethnicity",
+                    "study_site"
+                  ]
+                },
+                {
+                  "title": "Behavior",
+                  "fields":[
+                    "drinking_frequency",
+                    "drinks_per_day",
+                    "frequency_of_heavy_drinking"
+                  ]
+                },
+                {
+                  "title": "Outcome",
+                  "fields":[
+                    "days_to_death",
+                    "days_90_survival",
+                    "days_180_survival"
+                  ]
+                },
+                {
+                  "title": "Lab Test",
+                  "fields":[
+                    "laboratory_test"
+                  ]
+                }
+              ]
+            },
+            "table": {
+              "enabled": true,
+              "fields": [
+                "project_id",
+                "pat_id",
+                "visit_day",
+                "group",
+                "study_site",
+                "gender",
+                "race",
+                "actarm",
+                "ethnicity",
+                "age_at_index",
+                "drinking_frequency",
+                "drinks_per_day",
+                "frequency_of_heavy_drinking",
+                "irAE_status",
+                "days_to_death",
+                "days_90_irAE",
+                "days_90_survival",
+                "days_180_irAE",
+                "days_180_survival",
+                "laboratory_test"
+              ]
+            },
+            "dropdowns": {},
+            "buttons": [],
+            "guppyConfig": {
+              "dataType": "case",
+              "tierAccessLevel": "private",
+              "nodeCountTitle": "Participants",
+              "fieldMapping": [
+                { "field": "project_id", "name": "Project" },
+                { "field": "pat_id", "name": "Patient Id" },
+                { "field": "visit_day", "name": "Assessment Date" },
+                { "field": "study_site", "name": "Clinical site"},
+                { "field": "actarm", "name": "Treatment Arm"},
+                { "field": "age_at_index", "name": "Age"},
+                { "field": "eGFR", "name": "eGFR"},
+                { "field": "gender", "name": "sex"},
+                {"field":"observational", "name": "Observational"},
+                {"field": "clinical_trial", "name": "Clinical Trial" },
+                { "field": "drinking_frequency", "name": "Drinking frequency in the past year"},
+                { "field": "drinks_per_day", "name": "Drinks per day in the past year"},
+                { "field": "frequency_of_heavy_drinking", "name": "Frequency of heavy Drinking in the past year"},
+                { "field": "irAE_status", "name": "irAE status"},
+                { "field": "days_to_death", "name": "days to Survival"},
+                { "field": "days_90_irAE", "name": "days 90 irAE"},
+                { "field": "days_90_survival", "name": "days 90 survival"},
+                { "field": "days_180_irAE", "name": "days 180 irAE"}
+              ],
+              "manifestMapping": {
+                "resourceIndexType": "file",
+                "resourceIdField": "object_id",
+                "referenceIdFieldInResourceIndex": "_case_id",
+                "referenceIdFieldInDataIndex": "_case_id"
+              },
+              "accessibleFieldCheckList": ["project_id"],
+              "accessibleValidationField": "project_id"
+            }
+          },
+          {
+            "tabTitle": "Follow Ups",
+            "charts": {
+              "study_id": {
+                "chartType": "count",
+                "title": "Studys"
+              },
+              "visit_day": {
+                "chartType": "pie",
+                "title": "Visits (day)"
+              },
+              "case_arm": {
+                "chartType": "bar",
+                "title": "Treatment Arm"
+              },
+              "case_group": {
+                "chartType": "bar",
+                "title": "Case Group"
+              },
+              "gender": {
+                "chartType": "fullPie",
+                "title": "Sex"
+              },
+              "race": {
+                "chartType": "bar",
+                "title": "Race"
+              },
+              "ethnicity": {
+                "chartType": "pie",
+                "title": "Ethnicity"
+              },
+              "study_site": {
+                "chartType": "fullPie",
+                "title": "Study Site"
+              },
+              "days_90_survival": {
+                "chartType":"fullPie",
+                "title": "Days 90 Survival"
+              },
+              "days_180_survival": {
+                "chartType":"fullPie",
+                "title": "Days 180 Survival"
+              },
+              "days_90_irAE": {
+                "chartType": "pie",
+                "title": "Days 90 irAE"
+              },
+      
+              "days_180_irAE": {
+                "chartType":"pie",
+                "title": "Days 180 irAE"
+              }
+            },
+            "filters": {
+              "tabs": [
+                {
+                  "title": "Study",
+                  "fields":[
+                    "project_id",
+                    "study_name",
+                    "case_arm",
+                    "case_group"
+                  ]
+                },
+                {
+                  "title": "Follow Up",
+                  "fields":[
+                    "visit_day",
+                    "bmi",
+                    "child_pugh_score",
+                    "lille_score",
+                    "maddreys_score",
+                    "meld_score"
+                  ]
+                },
+                {
+                  "title": "Lab Test",
+                  "fields":[
+                    "laboratory_test"
+                  ]
+                },
+                {
+                  "title": "Participant",
+                  "fields":[
+                    "study_site",
+                    "gender",
+                    "race",
+                    "ethnicity"
+                  ]
+                },
+                {
+                  "title": "Outcome",
+                  "fields":[
+                    "days_to_death",
+                    "days_90_survival",
+                    "days_180_survival"
+                  ]
+                }
+              ]
+            },
+            "table": {
+              "enabled": true,
+              "fields": [
+                "project_id",
+                "follow_up_id",
+                "study_name",
+                "pat_id",
+                "visit_day",
+                "bmi",
+                "child_pugh_score",
+                "lille_score",
+                "maddreys_score",
+                "meld_score",
+                "case_arm",
+                "case_group"
+              ]
+            },
+            "dropdowns": {},
+            "buttons": [],
+            "guppyConfig": {
+              "dataType": "follow_up",
+              "tierAccessLevel": "private",
+              "nodeCountTitle": "Follow_ups",
+              "fieldMapping": [
+                { "field": "pat_id", "name": "Patient Id"},
+                { "field": "visit_day", "name": "Assessment Date" },
+                { "field": "study_site", "name": "Clinical site"},
+                { "field": "case_arm", "name": "Treatment Arm"},
+                { "field": "project_id", "name": "Project" },
+                { "field": "visit_day", "name": "Assessment Date" },
+                {"field":"observational", "name": "Observational"},
+                {"field": "clinical_trial", "name": "Clinical Trial" },
+                { "field": "gender", "name": "sex"},
+                { "field": "irAE_status", "name": "irAE status"},
+                { "field": "days_to_death", "name": "days to Survival"},
+                { "field": "days_90_irAE", "name": "days 90 irAE"},
+                { "field": "days_90_survival", "name": "days 90 survival"},
+                { "field": "days_180_irAE", "name": "days 180 irAE"}
+              ],
+              "manifestMapping": {
+                "resourceIndexType": "file",
+                "resourceIdField": "object_id",
+                "referenceIdFieldInResourceIndex": "_case_id",
+                "referenceIdFieldInDataIndex": "_case_id"
+              },
+              "accessibleFieldCheckList": ["project_id"],
+              "accessibleValidationField": "project_id"
+            }
+          },
+          {
+            "tabTitle": "Biospecimens",
+            "charts": {
+              "follow_up_id":{
+                "chartType": "count",
+                "title": "Follow Ups"
+              },
+              "lab_id":{
+                "chartType": "count",
+                "title": "Labs"
+              },
+              "lab_name":{
+                "chartType": "bar",
+                "title": "Labs"
+              },
+              "specimen_type":{
+                "chartType": "bar",
+                "title": "Specimen Type"
+              },
+              "case_group":{
+                "chartType":"bar",
+                "title":"Case Group"
+              },
+              "gender": {
+                "chartType": "fullPie",
+                "title": "Sex"
+              },
+              "race": {
+                "chartType": "bar",
+                "title": "Race"
+              },
+              "ethnicity": {
+                "chartType": "pie",
+                "title": "Ethnicity"
+              },
+              "study_site": {
+                "chartType": "fullPie",
+                "title": "Study Site"
+              },
+              "days_90_survival": {
+                "chartType":"fullPie",
+                "title": "Days 90 Survival"
+              },
+              "days_180_survival": {
+                "chartType":"fullPie",
+                "title": "Days 180 Survival"
+              },
+              "days_90_irAE": {
+                "chartType": "pie",
+                "title": "Days 90 irAE"
+              },
+      
+              "days_180_irAE": {
+                "chartType":"pie",
+                "title": "Days 180 irAE"
+              }
+            },
+            "filters": {
+              "tabs": [
+                {
+                  "title": "Biospecimen",
+                  "fields":[
+                    "specimen_type",
+                    "lab_name"
+                  ]
+                },
+                {
+                  "title": "Study",
+                  "fields":[
+                    "project_id",
+                    "study_name",
+                    "case_group",
+                    "case_arm"
+                  ]
+                },
+                {
+                  "title":"Participant",
+                  "fields":[
+                    "study_site",
+                    "gender",
+                    "race",
+                    "ethnicity"
+                  ]
+                },
+                {
+                  "title":"Follow Up",
+                  "fields": [
+                    "visit_day"
+                  ]
+                },
+                {
+                  "title": "Outcome",
+                  "fields":[
+                    "days_to_death",
+                    "days_90_survival",
+                    "days_180_survival"
+                  ]
+                }
+              ]
+            },
+            "table": {
+              "enabled": true,
+              "fields": [
+                "project_id",
+                "aliquot_id",
+                "follow_up_id",
+                "pat_id",
+                "specimen_type",
+                "visit_day",
+                "irAE_status"
+              ]
+            },
+            "dropdowns": {},
+            "buttons": [],
+            "guppyConfig": {
+              "dataType": "aliquot",
+              "tierAccessLevel": "private",
+              "nodeCountTitle": "Biospecimens",
+              "fieldMapping": [
+                { "field": "project_id", "name": "Project" },
+                { "field": "pat_id", "name": "Patient Id" },
+                { "field": "visit_day", "name": "Assessment Date" },
+                { "field": "study_site", "name": "Clinical site"},
+                { "field": "observational", "name": "Observational"},
+                { "field": "clinical_trial", "name": "Clinical Trial" },
+                { "field": "gender", "name": "sex"},
+                { "field": "days_to_death", "name": "days to Survival"}
+              ],
+              "manifestMapping": {
+                "resourceIndexType": "file",
+                "resourceIdField": "object_id",
+                "referenceIdFieldInResourceIndex": "_case_id",
+                "referenceIdFieldInDataIndex": "_case_id"
+              },
+              "accessibleFieldCheckList": ["project_id"],
+              "accessibleValidationField": "project_id"
+            }
+          },
+          {
+            "tabTitle": "Lab Results",
+            "charts": {
+              "project_id": {
+                "chartType": "count",
+                "title": "Projects"
+              },
+              "laboratory_test": {
+                "chartType": "bar",
+                "title": "Laboratory Test"
+              },
+              "gender": {
+                "chartType": "fullPie",
+                "title": "Sex"
+              },
+              "race": {
+                "chartType": "bar",
+                "title": "Race"
+              },
+              "lab_name": {
+                "chartType":"bar",
+                "title": "Lab"
+              },
+              "study_site": {
+                "chartType": "fullPie",
+                "title": "Study Site"
+              },
+              "ethnicity": {
+                "chartType": "pie",
+                "title": "Ethnicity"
+              },
+              "test_result": {
+                "chartType": "pie",
+                "title": "Test Result"
+              },
+              "days_90_survival": {
+                "chartType":"fullPie",
+                "title": "Days 90 Survival"
+              },
+              "days_180_survival": {
+                "chartType":"fullPie",
+                "title": "Days 180 Survival"
+              },
+              "days_90_irAE": {
+                "chartType": "pie",
+                "title": "Days 90 irAE"
+              },
+              "days_180_irAE": {
+                "chartType":"pie",
+                "title": "Days 180 irAE"
+              }
+            },
+            "filters": {
+              "tabs": [
+                {
+                  "title": "Study",
+                  "fields":[
+                    "project_id",
+                    "study_name",
+                    "case_arm",
+                    "case_group"
+                  ]
+                },
+                {
+                  "title":"Lab",
+                  "fields": [
+                    "lab_name"
+                  ]
+                },
+                {
+                  "title":"Participant",
+                  "fields":[
+                    "gender",
+                    "race",
+                    "ethnicity",
+                    "study_site"
+                  ]
+                },
+                {
+                  "title": "Lab Test",
+                  "fields":[
+                    "laboratory_test",
+                    "test_result"
+                  ]
+                },
+                {
+                  "title": "Outcome",
+                  "fields":[
+                    "days_to_death",
+                    "days_90_survival",
+                    "days_180_survival"
+                  ]
+                }
+              ]
+            },
+            "table": {
+              "enabled": true,
+              "fields": [
+                "project_id",
+                "molecular_test_id",
+                "study_name",
+                "pat_id",
+                "case_arm",
+                "case_group",
+                "laboratory_test",
+                "test_value",
+                "test_result",
+                "irAE_status",
+                "visit_day"
+              ]
+            },
+            "dropdowns": {},
+            "buttons": [],
+            "guppyConfig": {
+              "dataType": "molecular_test",
+              "tierAccessLevel": "private",
+              "nodeCountTitle": "Lab Results",
+              "fieldMapping": [
+                { "field": "project_id", "name": "Project" },
+                { "field": "pat_id", "name": "Patient Id" },
+                { "field": "visit_day", "name": "Assessment Date" },
+                { "field": "study_site", "name": "Clinical site"},
+                { "field": "observational", "name": "Observational"},
+                { "field": "clinical_trial", "name": "Clinical Trial" },
+                { "field": "days_to_death", "name": "days to Survival"},
+                { "field": "gender", "name": "sex"}
+              ],
+              "manifestMapping": {
+                "resourceIndexType": "file",
+                "resourceIdField": "object_id",
+                "referenceIdFieldInResourceIndex": "_case_id",
+                "referenceIdFieldInDataIndex": "_case_id"
+              },
+              "accessibleFieldCheckList": ["project_id"],
+              "accessibleValidationField": "project_id"
+            }
+          },
+          {
+            "tabTitle": "Omics Data",
+            "charts": {
+              "project_id": {
+                "chartType": "count",
+                "title": "Projects"
+              },
+              "genomic_experimental_strategy": {
+                "chartType": "bar",
+                "title": "Genomic Profile Experimental Strategy"
+              },
+              "genomic_data_category": {
+                "chartType": "pie",
+                "title": "Genomic Profile Data Category"
+              },
+              "genomic_data_format": {
+                "chartType": "fullPie",
+                "title": "Genomic Profile Data Format"
+              },
+              "slide_image_data_category": {
+                "chartType": "pie",
+                "title": "Slide Image Data Category"
+              },
+              "slide_image_data_format": {
+                "chartType": "fullPie",
+                "title": "Slide Image Data Format"
+              }
+            },
+            "filters": {
+              "tabs": [
+                {
+                  "title": "Genomic Profile",
+                  "fields":[
+                    "project_id",
+                    "genomic_experimental_strategy",
+                    "genomic_data_category",
+                    "genomic_data_format"
+                  ]
+                }
+              ]
+            },
+            "table": {
+              "enabled": true,
+              "fields": [
+                "project_id",
+                "core_metadata_collections_id",
+                "genomic_data_category",
+                "genomic_data_format",
+                "genomic_data_type",
+                "genomic_file_name",
+                "genomic_file_size",
+                "genomic_md5sum"
+              ]
+            },
+            "dropdowns": {},
+            "buttons": [],
+            "guppyConfig": {
+              "dataType": "core_metadata_collection",
+              "tierAccessLevel": "private",
+              "nodeCountTitle": "Metadata Collections",
+              "fieldMapping": [
+                { "field": "project_id", "name": "Project id" },
+                { "field": "core_metadata_collections_id", "name": "Core Metadata Collections ID" },
+                { "field": "genomic_data_category", "name": "Genomic Data Category" },
+                { "field": "genomic_data_format", "name": "Genomic Data Format" },
+                { "field": "genomic_data_type", "name": "Genomic Data Type" },
+                { "field": "genomic_file_name", "name": "Genomic File Name" },
+                { "field": "genomic_file_size", "name": "Genomic File Size" },
+                { "field": "genomic_md5sum", "name": "Genomic md5sum" },
+                { "field": "genomic_experimental_strategy", "name": "Genomic Experimental Strategy" }
+              ],
+              "manifestMapping": {
+                "resourceIndexType": "file",
+                "resourceIdField": "object_id"
+              },
+              "accessibleFieldCheckList": ["project_id"],
+              "accessibleValidationField": "project_id"
+            }
+          },
+          {
+            "tabTitle": "Image Data",
+            "charts": {
+              "project_id": {
+                "chartType": "count",
+                "title": "Projects"
+              },
+              "data_category": {
+                "chartType": "pie",
+                "title": "Slide Image Data Category"
+              },
+              "data_format": {
+                "chartType": "fullPie",
+                "title": "Slide Image Data Format"
+              }
+            },
+            "filters": {
+              "tabs": [
+                {
+                  "title": "Slide Image",
+                  "fields":[
+                    "project_id",
+                    "data_category",
+                    "data_format"
+                  ]
+                }
+              ]
+            },
+            "table": {
+              "enabled": true,
+              "fields": [
+                "project_id",
+                "core_metadata_collections_id",
+                "data_category",
+                "data_format",
+                "data_type",
+                "file_name",
+                "file_size",
+                "md5sum"
+              ]
+            },
+            "dropdowns": {},
+            "buttons": [],
+            "guppyConfig": {
+              "dataType": "slide_image",
+              "tierAccessLevel": "private",
+              "nodeCountTitle": "Metadata Collections",
+              "fieldMapping": [
+                { "field": "project_id", "name": "Project id" },
+                { "field": "core_metadata_collections_id", "name": "Core Metadata Collections ID" },
+                { "field": "slide_image_id", "name": "Slide Image ID" },
+                { "field": "data_category", "name": "Slide Image Data Category" },
+                { "field": "data_format", "name": "Slide Image Data Format" },
+                { "field": "data_type", "name": "Slide Image Data Type" },
+                { "field": "file_name", "name": "Slide Image File Name" },
+                { "field": "file_size", "name": "Slide Image File Size" },
+                { "field": "md5sum", "name": "Slide Image md5sum" }
+              ],
+              "manifestMapping": {
+                "resourceIndexType": "file",
+                "resourceIdField": "object_id"
+              },
+              "accessibleFieldCheckList": ["project_id"],
+              "accessibleValidationField": "project_id"
+            }
+          }
+        ],
+        "useArboristUI": true,
+        "showArboristAuthzOnProfile": true,
+        "showFenceAuthzOnProfile": false
+      }
+    favicon:
+      "PCFkb2N0eXBlIGh0bWw+PGh0bWwgbGFuZz0iZW4iPjxoZWFkPjxtZXRhIGh0dHAtZXF1aXY9IkNvbnRlbnQtVHlwZSIgY29udGVudD0idGV4dC9odG1sOyBjaGFyc2V0PVVURi04Ij48bWV0YSBodHRwLWVxdWl2PSJDb250ZW50LVNlY3VyaXR5LVBvbGljeSIgY29udGVudD0iZGVmYXVsdC1zcmMgJ3NlbGYnIGh0dHBzOi8vbG9naW4uYmlvbmltYnVzLm9yZyBodHRwczovL3dheWYuaW5jb21tb25mZWRlcmF0aW9uLm9yZzsgY2hpbGQtc3JjIGJsb2I6OyBpbWctc3JjICdzZWxmJyBodHRwczovL29wZW5kYXRhLmRhdGFjb21tb25zLmlvIGh0dHBzOi8vc3RhdGljLnBsYW54LXBsYS5uZXQgZGF0YTogaHR0cHM6Ly8qLnMzLmFtYXpvbmF3cy5jb20gaHR0cHM6Ly93d3cuZ29vZ2xlLWFuYWx5dGljcy5jb20gYmxvYjo7IHNjcmlwdC1zcmMgJ3NlbGYnICd1bnNhZmUtZXZhbCcgaHR0cHM6Ly93d3cuZ29vZ2xlLWFuYWx5dGljcy5jb20gOyB3b3JrZXItc3JjICdzZWxmJyBibG9iOjsgc3R5bGUtc3JjICdzZWxmJyAndW5zYWZlLWlubGluZScgaHR0cHM6Ly9mb250cy5nb29nbGVhcGlzLmNvbTsgb2JqZWN0LXNyYyAnbm9uZSc7IGZvbnQtc3JjICdzZWxmJyBkYXRhOiBodHRwczovL2ZvbnRzLmdvb2dsZWFwaXMuY29tIGh0dHBzOi8vZm9udHMuZ3N0YXRpYy5jb207IGNvbm5lY3Qtc3JjICdzZWxmJyBodHRwczovL2xvZ2luLmJpb25pbWJ1cy5vcmcgaHR0cHM6Ly93YXlmLmluY29tbW9uZmVkZXJhdGlvbi5vcmcgaHR0cHM6Ly9vcGVuZGF0YS5kYXRhY29tbW9ucy5pbyBodHRwczovL3N0YXRpYy5wbGFueC1wbGEubmV0IGh0dHBzOi8vd3d3Lmdvb2dsZS1hbmFseXRpY3MuY29tIGh0dHBzOi8vYnVja2V0MS5zMy5hbWF6b25hd3MuY29tOyBmcmFtZS1zcmMgaHR0cHM6Ly9idWNrZXQxLnMzLmFtYXpvbmF3cy5jb20gJ3NlbGYnIGh0dHBzOi8vYXVzcGljZS5wbGFueC1wbGEubmV0IGh0dHBzOi8vYXVzcGljZS5wYW5kZW1pY3Jlc3BvbnNlY29tbW9ucy5vcmc7OyI+PG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13aWR0aCIvPjxsaW5rIGhyZWY9Imh0dHBzOi8vZm9udHMuZ29vZ2xlYXBpcy5jb20vaWNvbj9mYW1pbHk9U291cmNlK1NhbnMrUHJvIiByZWw9InN0eWxlc2hlZXQiPjxsaW5rIGhyZWY9Imh0dHBzOi8vZm9udHMuZ29vZ2xlYXBpcy5jb20vY3NzMj9mYW1pbHk9Um9ib3RvOml0YWwsd2dodEAwLDQwMDswLDcwMDsxLDcwMCZkaXNwbGF5PXN3YXAiIHJlbD0ic3R5bGVzaGVldCI+PGxpbmsgaHJlZj0iaHR0cHM6Ly9mb250cy5nb29nbGVhcGlzLmNvbS9jc3MyP2ZhbWlseT1NYXJ0ZWw6d2dodEA0MDA7NzAwJmRpc3BsYXk9c3dhcCIgcmVsPSJzdHlsZXNoZWV0Ij48bGluayBocmVmPSJodHRwczovL2ZvbnRzLmdvb2dsZWFwaXMuY29tL2NzczI/ZmFtaWx5PU1vbnRzZXJyYXQ6d2dodEA0MDA7NzAwJmRpc3BsYXk9c3dhcCIgcmVsPSJzdHlsZXNoZWV0Ij48bGluayByZWw9InN0eWxlc2hlZXQvbGVzcyIgbWVkaWE9ImFsbCIgaHJlZj0iL25vZGVfbW9kdWxlcy9AZ2VuMy91aS1jb21wb25lbnQvZGlzdC9jc3MvYmFzZS5sZXNzIj48bGluayByZWw9InN0eWxlc2hlZXQiIG1lZGlhPSJhbGwiIGhyZWY9Ii9zcmMvY3NzL2dyYXBoaXFsLmNzcyIvPjxsaW5rIHJlbD0iaWNvbiIgdHlwZT0iaW1hZ2UvcG5nIiBocmVmPSIvc3JjL2ltZy9mYXZpY29uLmljbyI+PHRpdGxlPlRoZSBBbGNIZXBOZXQgUmVzZWFyY2ggRGF0YSBDb21tb25zIFBvcnRhbDwvdGl0bGU+PC9oZWFkPjxib2R5PjxkaXYgaWQ9InJvb3QiPjwvZGl2PjxsaW5rIGlkPSJnZW4zLXRoZW1lLW92ZXJyaWRlcyIgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSIvc3JjL2Nzcy90aGVtZW92ZXJyaWRlcy5jc3MiLz48c2NyaXB0IHNyYz0iL3ZlbmRvcnN+YnVuZGxlLmpzP2FmZjllOTdmZjFjYzViMTAwNTAzIj48L3NjcmlwdD48c2NyaXB0IHNyYz0iL2J1bmRsZS5qcz9hZmY5ZTk3ZmYxY2M1YjEwMDUwMyI+PC9zY3JpcHQ+PC9ib2R5PjwvaHRtbD4="
+    css: |
+      :root {
+        --primary-color: #F37021;
+        --secondary-color: #005496;
+
+        --primary-color_light: #F37021;
+        --secondary-color_light: #005496;
+
+        --g3-color__bg-cloud: #F5F5F5;
+        --g3-color__bg-coal: #4A4A4A;
+        --g3-color__gray: #606060;
+        --g3-color__lightgray: #9B9B9B;
+        --g3-color__smoke: #D1D1D1;
+        --g3-color__silver: #E7E7E7;
+        --g3-color__black: #000000;
+        --g3-color__white: #FFFFFF;
+
+        --g3-primary-btn__color: var(--g3-color__white);
+        --g3-primary-btn__bg-color: var(--secondary-color);
+        --g3-primary-btn__bg-color--hover: var(--secondary-color_light);
+        --g3-primary-btn__border-color: var(--g3-color__lightgray);
+        --g3-primary-btn__border-color--hover: var(--g3-color__gray);
+        --g3-primary-btn__border-color--active: var(--g3-color__lightgray);
+
+        --g3-secondary-btn__color: var(--g3-color__white);
+        --g3-secondary-btn__bg-color: var(--secondary-color);
+        --g3-secondary-btn__bg-color--hover: var(--secondary-color_light);
+        --g3-secondary-btn__border-color: var(--g3-color__lightgray);
+        --g3-secondary-btn__border-color--hover: var(--g3-color__gray);
+        --g3-secondary-btn__border-color--active: var(--g3-color__lightgray);
+
+        --g3-default-btn__color: var(--g3-color__gray);
+        --g3-default-btn__color--hover: var(--g3-color__black);
+        --g3-default-btn__color--active: var(--g3-color_lightgray);
+        --g3-default-btn__bg-color: var(--g3-color__white);
+        --g3-default-btn__border-color: var(--g3-color__gray);
+        --g3-default-btn__border-color--hover: var(--g3-color__black);
+
+        --g3-disabled-btn__color: var(--g3-color__lightgray);
+        --g3-disabled-btn__bg-color: var(--g3-color__white);
+        --g3-disabled-btn__border-color: var(--g3-color__silver);
+
+        --g3-dropdown-item__bg-color: var(--g3-color__gray);
+        --g3-dropdown-item__color: var(--g3-color__white);
+        --g3-dropdown-menu__border-color: var(--g3-color__gray);
+
+        --g3-footer-color: var(--g3-color__bg-coal);
+        --g3-font__medium-weight: 500;
+        --g3-font__semi-bold-weight: 600;
+      }
+
+      h1, h2, h3, h4,
+      body,
+      .caption,
+      .form-h1, .form-h2, .form-caption,
+      .introduction,
+      .body,
+      .special-number,
+      .form-body,
+      .form-special-number {
+          font-family: 'Montserrat';
+      }
+
+      /* Buttons */
+
+      .data-dictionary__switch-button--active,
+      .popup__title {
+        background-color: var(--primary-color);
+      }
+
+      .g3-button--primary:hover,
+      .g3-dropdown-button__button--primary:hover,
+      .data-dictionary__switch-button:hover,
+      .button-primary-orange:hover {
+        background-color: var(--primary-color)
+      }
+
+      .g3-button--default:active,
+      .g3-button--default:active svg path {
+        border: 1px solid var(--secondary-color);
+        color: 1px solid var(--secondary-color);
+        fill: 1px solid var(--secondary-color);
+      }
+
+      /* Discovery page specs */
+      .discovery-header__stat-number {
+        color: #99286B;
+        font-size: 40px;
+        line-height: 50px;
+      }
+
+      .discovery-search {
+        border-color: rgb(139, 51, 105);
+      }
+
+      .discovery-modal__close-button {
+        color: rgb(139, 51, 105);
+      }
+
+      .discovery-adv-filter-button {
+        color: rgb(139, 51, 105);
+      }
+
+      .discovery-action-bar-button {
+        color: rgb(139, 51, 105);
+        border-color: rgb(139, 51, 105);
+      }
+
+      .discovery-header__dropdown-tags-control-button  {
+        color: rgb(139, 51, 105);
+        border-color: rgb(139, 51, 105);
+      }
+
+      .discovery-modal__attribute {
+        background-color: #dfe3e2;
+        border-radius: 4px;
+      }
+
+      .ant-table-thead {
+        font-weight: 900;
+      }
+
+      /* Nav Bars and Footer */
+
+      .top-bar,
+      .top-bar__header,
+      .top-icon-button.body-typo {
+        background-color: var(--secondary-color);
+      }
+
+      .top-bar__link {
+        border-right: 2px solid #fff;
+      }
+
+      .nav-button:hover,
+      .button-active {
+        border-bottom: 3px solid var(--primary-color);
+      }
+
+      .nav-bar__logo {
+        padding: 15px 0;
+      }
+
+      .nav-bar__logo-img {
+        height: 50px;
+      }
+
+      .nav-bar__link--home:hover {
+        color: var(--primary-color);;
+        opacity: 1;
+        border-bottom: 0;
+      }
+
+
+      .footer__version-area {
+        display: none;
+      }
+
+      .footer {
+        background-color: #000;
+      }
+
+      .footer-container {
+        align-items: center;
+        background-color: #000;
+      }
+
+      .footer__nav {
+        align-items: center;
+        background-color: #000;
+      }
+
+      /* Data Explorer */
+
+      .filter-group__tab,
+      .g3-filter-group__tab {
+        border-top: 1px solid var(--primary-color);
+        border-right: 1px solid var(--primary-color);
+        border-left: 1px solid var(--primary-color);
+        color: var(--primary-color);
+      }
+
+      .tier-access-selector__radio-input:checked+.tier-access-selector__customized-radio-input::after {
+        background-color: var(--primary-color);
+      }
+
+      .filter-group__tab--selected,
+      .g3-filter-group__tab--selected {
+        background-color: var(--secondary-color);
+        color: #fff;
+      }
+
+      .aggregation-card .bucket-item .bucket-count {
+        color: var(--secondary-color);
+      }
+
+      .aggregation-card input[type='checkbox']:checked {
+        background: var(--secondary-color);
+      }
+
+      .g3-single-select-filter__checkbox:checked {
+        background: var(--primary-color);
+      }
+
+      .input-range__track--active,
+      .rc-slider-track,
+      .g3-single-select-filter__count .g3-icon--under {
+        background-color: var(--secondary-color);
+      }
+
+
+      /* .input-range__track--active,
+      .rc-slider-track,
+      .g3-single-select-filter__count .g3-icon--under {
+        background-color: var(--primary-color);
+      } */
+
+      /* Charts */
+
+      tspan.special-number,
+      .special-number,
+      .form-special-number,
+      .g3-single-select-filter__count {
+        color: var(--primary-color);
+      }
+
+      .special-number {
+        fill: var(--primary-color);
+      }
+
+      .data-explorer__charts tspan.special-number,
+      .data-explorer__charts .special-number,
+      .data-explorer__charts .form-special-number {
+        color: var(--secondary-color);
+      }
+
+      .data-explorer__charts .special-number {
+        fill: var(--secondary-color);
+      }
+
+      /* Index Changes inherited from MIDRC */
+
+      .introduction__icon {
+        display: none;
+      }
+
+      .index-button-bar {
+        width: 100%;
+        background-color: var(--g3-color__white);
+      }
+
+      .index-button-bar__thumbnail-button {
+        background-color: inherit;
+        border: none;
+      }
+
+      .index-button-bar__thumbnail-title {
+        display: none;
+      }
+
+      @media screen and (max-width: 1170px) {
+        .index-button-bar {
+          padding: 0 10%;
+        }
+      }
+    logo:
+      "iVBORw0KGgoAAAANSUhEUgAABgsAAAEWCAYAAABYJqeUAAAACXBIWXMAAFxGAABcRgEUlENBAAAgAElEQVR4nO3dP3bbyLL4ceCeeTH1ohdKDxuQ7grEiV4o3pSJ6BWYswLTKzC9AlMJ0qHCF1lawUgb4Ijhi64Z/wL8TssFG6JBEn8aQHX393OOztw7f2SQBIFGVVdVnGVZBAAAAAAAAABAn+IkvYqiaBJF0fjAH/stiqKnKIpW2Wb6wofTLZIFAAAAAAAAAIDexElqkgOLKIquK/6Z22wzveAT6tZvPr84AAAAAAAAAIAOcZKeRVG0jKLotuYBrfkIu/cP318gAAAAAAAAAGBYcZLOoih6aZAoMB74+LpHGyIAAAAAAAAAQCdkLsGyRsuhX2Sbacyn0z3aEAEAAAAAAAAArJKWQ/Moij60/L2PfDL9IFkAAAAAAAAAALAmTtKJVBOcW/idtCDqCckCAAAcEifpRRRFFwMe8VO2mX4L9ZyR8tmzDn714O9rh68t95Jtpi8d/n4AgAUN1hpc3xEU2Slt1k1j+etNFEV/ZJvpkjMBaDXA+BiSBT35TQZLDBl08NFDtpmqPollAThTcCi+WR1aKMdJOpbFBOAj85C40v66/t///Fete95//O//Lbo9okZmFko42/jd1kKt4zVIV+dkqz6bR9xHUTTp4PfW0dVry32MoqiT75SCdY36tR8AlCk8o4zlntxo92ecpOYvWxlamV8PHzRtMvDtXhEn6bzjJL92y77OrUIC7UrOocuSf+2TbLyYh7yxBpDvwerA9yS3rXu/Ya3dn9/kQtflg2GotJ/EFwMHm3z1IAvkMmPec3jsURYE2tW952lMFvikyzWIK+dk7sY89LMjrTEN65pO1n5xkmpYU67aJt96CNId3LDRlKeba0hsBU52e07kxzyfjCy+I+fyk9/bX6/LcZKahPhawcYSb+4Vkij4ZON3OezK9kYLSZ7lVQN5xWWdtarZRT02rVeyzfRJy1tbcYOO9fsowiPn2vLAvWUnz2fmXHsq3I8WFRIHz5xO/aENEQAAgA5mR9qDpodLqKBhU4+N4FbXQbpjGzaa8nVzTVeJrZmDyRVzvf0mf33yOVCW73iWwIzNBEEVN5IUX0oQiaBkeyFXFORsVmm8WOqpHsnveTCJBw1rOkmAfKnwr3ZxH0VA4iRdHFk3mUTBm++EVOC8Jg9kDXEsacBGhx6RLAAAANBjbQI6lK8D6EiXgasLByvW3xxvnKTP0trEpcq0oyRQuKj42TzLOfJS+Mnlu60vpCKhSWB1JIEk8xPbeYUImM3goa1EQW6kKGFApTQ6VXE+wezYd8Hcd+MkXR/5PWym6hHJAgAA3LKSB/hxi4f1U/IS0fX+v0f7iqjYH/iiEDS5srRT81ze+yHmFxzqfXwmu4VvKvyOx8I5uo/dasDwSEQeZ/orf5HdkTOX73k1hkvuauz2/7EukDZdY7lfVbk/wK6H0FvcOlCJOXjCQJKFdRKFQN1z7EyuR8fmE3zMNtNfniv3yWapmczA2b938RzRI5IFAAA4RB7kV3k//sLD+thia4F5H7sqs830dei7LDKv9oLvZycWnUV/SC/kzheRxx725IFsWeO4DxlkfsGJB1lT8bA6EXS6yzbTQVqQSEDvzS5V+W5cyY66tp+JcWd+1wCtMx4L/7vx8NGWf76N1/xt77Xsa5pwyweqdhEELx6zLzPe+jp/t3u705v0/h6S+Z59jZPUBDic25VbMXgTyXWt0TDW4npE/ry5/FT5Hm/r/nk2eHavILBr1/79ydYmkJF8R8YDVY1WvX7NqGpFXdLebl1hbVrrmcY8T8i1+brw90LfsNYrkgUAADhs72H9SoIDbR5utn23X5CHk18WgFKKemq34p2WocBmEWsG2kVR9LeFX2fmFzwpWxifCnyoatsh340XGRBcJWh2zLuh2pLkSbWiQu/xUzuG63os9Cx+sBnskmTUL68lJ6/prwq/6k6CZJ3P9yg7ZjnOPLg4GyB500rHAcyT506Loax3Jdegq5JqKNsJtQ8mYDFUIrSJGokCa9c1uY8vJKm8rvBnq9kh6uq9wrzncZLedXAfCNL+vbbG96iKSwmW9nodkTVplQTtH8zLQl1yfq0qPHc+N0xETWS9d85w4/6RLAAAwBNmoS/Dof5s8Yo0BXxXFZIFqnZ8mqBDnKSPlnbPriVI5cpOL5XHKQEVEwT4d8Nf8aitf7k81M8kodbm+557lt3FgyWn5Pp16l/7Y+jkoLz3T/L9XDY8rx5b9Nq+KPzUDYrvGv6ZlVQ8f5q+7lXV81OCfDNJqNlIHNzK8Hn1cwyGSBQUSeD9qkIlmrrApKP3Cs1tOT5a/F1VK1askfMhD1ba+LPNdWRdpRWLDXItqHI+PmrZdAN3nBhkvK/RdbHwHZzQgqh/JAsAAPDLgwSEmj7YaNrJfjKYMEBLmD6N5PO4cuFgNe9KkweO54Y7BNWWPZugQ5ykn6Moet/yVw2aKKhIXUCjxXm1tvFaCi3c8r9OThzL4N/Rikmhtn/GN9nFu5QE+tJCsG8pCQPt95xVldZDXQe1pYVEdCRhoPJ99PVeMQSb7bvkWtf2PlebbAAx19Wvln5lfh3pY3NFlQTLbqAZWXBUIQlVZ05N4/tNYYMGekayAAAAj8iD7tqHsnR5SDv2r4RQknppdmi61AJDsSdL7QS0Wcgu6jbB0AsHXudcwTGUaXJeWXnw3WvhtpY2MDZbZ3TFVvXVSSYoLvfEtu/JqPBdU0kSI6cCOM993U8kYXBoLaI5+OPDveJ3WwngmjuIu7IeIlkQ/Wwx+S9LVXznci/rtCq2MEPkFOYUoK66iYJ7zjE3/SP0NwAAAA+12bGn7QH+WEIglMXnrQSBhnbs3Dg2uFYLL6tQ5CGs7fkx+M5C2b15yJ3iypUmx9XZuSjnw6E2F0HufJb3ZGwhwXwrAxfVkeBglWqVvpNuLib1Xb9XPDII1C5pHfTO0i/9ILNvulSlmupzXy2R4AdpvVgnURBRceUukgUAAOAHhbs/jh1PSGWpX3p4uDzF9eSMtw8s8sB/3+JX3EiwcUjHkgWqZpPsqX0dGrCVjZYgaO/fRYsJA60VLlVajjwPEEQuPeeUB7Ndv1eon63hImnd9dnSoXf2GUlC81R18bPy+yqUkXkuTap7SBY4imQBAABwVWhlrQ8KArqHUGI8vLZBzMGqC+S8PhTcuPN8NkkXDiUwgn4fCwmDbYtfM7Z4SFbUaDkyRBCZXtP98y44pyW5lG2mc0vVMpfS3qkLVb7ntB9CXU3uH1vN88xwHMkCAACgGQ8zP40UBwF4GBiYBNTvWhzFkK2ujiUq2CVbX+l1k9YkVtp2aexlP6k4s2SI63RZgsqFtnXO8ji5ulNwDJF832wcy9x2WzPZ/X1qHsxHArioQxJb5w3eNM4zh5EsAAAAmh1baIa4CH0deKzgOKBTm52K1wO2ujoUvB2ibUpdda9DfQRKqcQ4Qs6pxtUFEpDTRGtrpOjAucgmgO60qZrRTsWaT5IxNpLrow6S4afWAGaeBe2HUFmNyrUywW9QcBnJAgAA4KpQAw5myOYQwSECPMpZqC7o/bySB9FDOyGrDGwdlMZWDgd2Frs4aLZLXgz2lJ3JGqsdjmG3aXd8ThSqOW9kTlCbe23u+sRw/8riJJ2dqCrYDVxBCDdVrVwrw7XeYSQLAAAA3PPJ1gNmVZStO6PNTsVb220RKji0S3vnS0B3IPsVDCT73vJlx6O6GQoVcC9BE9quYXNLlRy2kuKnKgYWzP9BA42fNWh96LbfQn8DAAAAevQxiqIPlv64lWmHQRAfRebhLE7Sxwp9iw+Z91xhcOhBdM0AxlZWewFxgkRv+XJuDdU6rKoXue8Vcc9CE6oCj+b+JJs2/mr5q85NT/g27YEq9JS/zzZT9ZV60EUqP28aHhTVjI4jWQAAANCfBwmefLHwJ44KCQOCqihatUgW9LZTWR5EDyULCGy0kG2mzDbpjqbrbZ1kwbjvgKvsZKZHenf2k4LergVkl7K2hMFTnKR/mGrPlr/KDDteNlnLVegpT/shNNVmPUhS2HEkCwAAAHpkgngyIPPWwp96Ka1aXGxFgY7IOXZqp+EhZoj2RU/tCg71wn2mYgZaKTs367QNmxG494tcp6kaGpDZsR8n6VXLNd1IAv5Nvp+LEz3lZ2woGZYkdMoSu9+Ur3VIFgSMmQUAAAA9yzbTWUlP8abMgDx2EWNfm3Oir3kYhwIjVBVAK22tFeokBM8HGo4P+G4uO/jbmEtQuTKZMfT+yL9/L8OY0SPTnspUisRJatpCZlEU/TuKoq8lP3+Zfx4n6UucpGtzfZbEkxZtjoVkgeNIFgAAAAxjYjHwdEsQCHvaBNw7b1kg1TVlgU4GG6MPtYJyBa4nZhfKglGA82Tnfts12KjBvffYfZ72Qz2SBIGp6jTnwp+SxKnaDvJcZgN8kgTCi1SHDo1kQcBIFgAAAAxAHi5nFnaj5T7JsL0uMbDMEXJ+3TU82sseAoqHghgMNkYfmp7frieyTEDygeQyYJfMiWm7Rqr8vZSE+7Hhs7Qf6oEJ6pvgviQIbk+0hKrKJA8+xEn6NFRyN07SWYvXsqt67plqGnMuy/v4ID8ktBVgZgEAAMBAZDjeREqTbcgHHne1o4cHT7esWvRRvuhqZxiDjaFAk8TqXU+zPOp4bDDMfCTJ5dce6QzDBqyZt1zPmVZhs4rfyWM7z2k/1DEJpjedDVXVpVQafJZrdedr8MLA7DYJ5ZG0X2pqQmXC8KgsAAAAGFC2mT5EUfTO0hGYINC6bt9b+EnOrW3DF9dl+wIGG1uU90Uu/Dx48+I6IH2+L2v+5p3S4cBtkhcmyPVFWl7U7pcO4C255zat6MudvM7IJpNjSUIqhzpikgRSSfCl40RB0XupCKsz0L4Ws5tf5p+Z1/bBUoVEUySwFSBZAAAAMDDZRdb2ATN3Lg8VBH4Qtdipf9Phg+n4wN+nqgB9aBL0XyqsKjBsJIbOpVf2v2XI5oT7B9BY22HH59JiqJR8N48FUz8qvVY5TYLpDzWSBFup/HpssWmjyCS4rbYlKsxZMOfLXxbbKLVxz/mrA22IAAAAFMg205kEZ+u2lChzKYFXhtthJYHAJtqWoh9SFghhsDE6J4GWuq25TMWLxqqCyFKyoOgm74MeJ+lWdpk+yF9fZOc0gANMqxhp8fWlxXu0OJJUXx0J6O5IutslyZmF7O4/Jl/DrA5dJyUJNGvRHjKfOXPRtCWRVKVMjlR4Do11oBIkCwAAAPSYSGCmbouMMrdxkn7LNlPK0QMmgYu7hg+nM9vJAnlYLtuVx2Bj9KFue4Ndw/kGvTA7MOMkfbZ0z9h3Lj8/EthxkkayUzb3ILNsnkgkAN+ZalHpad9088e1SWzut+WTQO+xocZz7qP2SHJ5XaGS4L7KQGm5Rppg/1KunU2C9SM5poPVJ/sk4bG2tBmpa7SiVII2RAAAAErIg8asZQl70Xt5YEXYmvZ/HXVw/hz6fVp3bruAljEVSICmblB95kBLhL77O18Xfj5I5dJXmZnxJPMPOuutDTiibaL9zX9fof3QM8PK7ZHqkL8qJAr+yDbTSZ0kjSSBxi3W+tfHWlWVODXjQg3mVulBZQEAAIAiZqEsu8e+Wjqq1wGW7PoMl/nspaVIk2F8M1vBSAl2lO3SfqRHbTPynnaxq9wrkvQ61UaiaCe7dF1oibBu0WrMtks5lk9S8bCSthzsdkZQZC33ueZ1p+h1dkjhu3Os/VDEUGN7ZNBvlWrMd00TNHJ+tGlXdaxV1b6xVD881WhdNz9RxXLINttMSRZ7gGQBAACAMhLcfdey523RWkraCciGayW7gOu6lv64Ns6dQz1y6bHcHAGiEyRRUOdaahIFY1d2OEorokeFO0eLiQPTCm3BPQiBWch9r0mifiT/7apC+6E7NoS0J8n3qq1A79pWcki7qlOf7SGV12ZmJlrdXx4nadNqT85DT5AsAAAAUEgeIsYtBqEV5T1Or/isg9U0WRBZHHRc9ju2juzetuWixUP4vrMWu1aDIO91nfO+Uu9phWaya1TjwMpI7mNmjs5Hkxyk0gAhKAw7/rPhyx3HSbo+Ud23I2ncXs1Egc33fNkwWRBJMqmrzRZNk88kCzxBsgAAAEApsxtIej/b2DF6aXp2M/A4TC13H7cedCyDAssewkPrsXzeImmDCuSaOZZdvVV39G4lSeBkoEO+321aWvTlg7RXGZMwQAhMMrzFvfeiQvuhBd8lK9Y1WvpZGyQtlcS7honeTpIFsl5rimSBJ0gWAAAA6DapsdvpFDPw+CGwndz4adUwYPE66Lhlyf2hZAMtiFCL7AB9kZ30kfz1QiotLmq2/HiWne7OJ60sV6N16VICc3UGdAIuMwn3vxsc/9WJILIZasw9tCVJtFZdG207uF88NG1FZPk4ck2TBVtazfnjH6G/AQAAAJrJ7qWJlD3bsGq5awiOkgfcpudR7Z63uSODje/YEYkG5hJAu5af9xJoua6YKDDfAdND/5/ZZnrlQ6IgJ72p73QczVHXktgAvCcB1I8NXuep3eaN78v4TtYndVoDdpGcaTwfRyrpbGv6jODEnB9UQ7IAAABAOXnQtBVYGUnC4IzPPUhNH3SvWySZGGwMm9YWkqcLVwYY1yUJgyaByb7Zmt0BuGAp7c5s+ezrNaxny5otgLpILrf5HDUlC2hB5BGSBQAAAA6Qh8J3lo70MsBe8fiuTYC+6dyCsv/umUAHmpDzZtwiYTDy/fqXbaYmEP97FEWPCg7nEKoLEAyporOVINuRbGuvQdu2+46qIbVVWDLcGMwsAAAAcIX0pL6Sthtt3cRJupCgEgJhHnTjJL1r2NfcDCY9q/OwLCXyZfM2Qq0q2DYMVF8Ufur05PeSSRhIoOeh4WDIaxmy621wQ17bWO4Z8yMVPkNaMLsAoZA13MxCr/klLfysqLv+9X7eV4sK0h0bQPxCsgAAAMAh2WY6lxZCNoZYfoiT9MWnnt2oZNHw/BlJwLHO+VJWVbAL+Jx7aZugkwTMRPpV2xh87iQLCYMgAtUSwHntbR4naX7eNBmm2QXvkzbAHnPd+driTdnRwq89CYrXTdp4nyxo0daIa7hnaEMEAAA0o69+OROAfbb0u74w8DgsMgPjvuGLrtuKqGwAI4GOFsznl22mZmfplbSaCVahJVET1xI8D0a2ma6zzXSSbaaxnDsf5Vpgs5d6XQxpRTAkMdbm+0ZVgR111zKPgbzvzCvAK5IFAABAM4LYJeSBpU3P7n0PJAyC0zRgf1n1XJF2C2U7vqlkscRC4Ml5Lee5BDvs3Zw7pspFkgcXhQTCO0kiPPZ0bgWVsAFMhVnDN4GqAgsaVueGUFUQtUi+kyzwDMkCAAAAB1lOGIxCDpqFSILMTatTqu7IK9sxfC+VDbAn+PdT2lo1qZbxfthxHZJAWEkSwbQHMi0p/rNQhdDFwOQR9x4Epuk1+4mqAiuaVDOFEgxvsnGIeQUeIlkAAADgqGIvagsupcKAoE04mu5QnJw6T6Svflk/YHZFoiuzhslTM+ydhMEBJjhZqEIYFyoQPlusPKCyDSEJPsE7sLotiIIIhsu6rcn8HxIFHiJZAAAA4DDTg7pFC459JAwCIruxmwT7RhVah5Q9jG8ZZIquyI7bpsnTWxmWjAokeTCXyoN3obfCAuAGaaN4XvNg1a5bLK+pmFeAH0gWAAAAOE6CvneWXsUlu7+D0vSzXpz45ww2Ru8kedq0VQ6t2BqQ+8+VxaH7ANAVjS2ItFRWkSzAD7+ZUsI2b4fswPjq0Vv62PY9cYFkIOM2hxonqXlI/ODR2/LRlNd29cvld7f+/XGSZnaOaHhSxoy3n69v11SgLQI3FWWb6UwCXTcWfp3ZZfv6O3s5eAxpJeuTuqXn5+aeVbarLU7SScnv29EbvjP7LQBCbwlgrlt/N/jvzuW7ULdFRfBMVYesYZ8a7NoFgL40GajedTC86bOO7QRtozgoFaN+orIAAABodsmnU8vM4sPDLX28/SetW5p+zoeSSWV/f+3jYEYNO9GlHcy48KM92N3pxiwZoN200uo97Yiake93ZxuvAKCNhi2I+phXcNHwv7M9+6JJZUEXQ++hAMkCAAAAT0iwZtxwyGcZEgZhaNoe6HY/WC4D8sqqW3xtQcRgVp0WLa6DzpyrcZI+7P0MWg0mLYls3X8AwKYmieA+KvWaJgusHVuL4cZUFXiKZAEAAPhBU79m2QF0jO0dNV4gYYC6Wu7E3g9OlgUrH3vYmQf8IOd006D/pbRbdcH13k/ToJNNTYJH3lUdAVCnSQuiPtYu1w3/O5vHxrwCvEGyAAAAFGnaJXs0cSHBIJS/N08Nh7gdQsLAf00Dq/stb8rOO84dDGHZImn6oULCGuVqB7BIJgLoQZOgfKfPGrKjvymbgfpG9zvmFfiLZAEAACjS1Kv52LFsezwOJ2Wb6TqKoncWj/22xe4nKCfBuia9Z8/zHu8y2Hi/H/BWWpMAuV6uI1Jl1aalkK+ts7Thfg6gUy2Sv1rnFWwtz4FiXgHeIFkAAACKNO2kPHYs7EKsQIK0TdvLIDxtBx1TVQBVss100WLo+3WcpNqHRfuA+zmArjV9vum6RVrTTVpry8fR5P3h2u0xkgUAAKBIU2UByQILss3UBHDvnX8h6Jwkl5rs8r2VXXtlg41JFmBobQL+i5ZtIvrmYusk2ljo5tL5DxzS6DzuoUVa0+cua9dNmVe3XxXa6zFAH5IFAACgaKShT7McQ5OFK8rNWuyuRViaBvfLdrndBTBbRM1Q+DKmRVScpNnej6akcOekp/Lnhn/OSGvC68DnqOF8rBuUs71DFnaRLIAPtN73mjxz7aTV6JDHEJEs8BvJAgAAsG+h4B05NZyXyoIapK/pmN7QqKBpYLQsuRdCVYH2ndxlxzdYAmfAZPSixbDja4cSLBrOxzrv1WMACUUA+IXcD0cN3hnbCdYm97dnyzMToAzJAgAAsO9GBpUOQhbP70/82QQXapJF/aRFwMx1Qe2mbkoCdzbmXGxlRzeG9UvweODg7CA73+X616YdkSvDjkfSUmIQ0rKpTlWgxoQi9woLhjwPgRK9DNavyeV5BazvPEeyAAAA/9hYwA0SGJGHy1PBg10PPUS9JO8bgRCcYiOAp6FCqQ8uVhYESWZyPDZ87Zdxkmo7pw99tqcq87pUZ6PBs3wm8BPXHuC4Jutx2y2IIpIFKEOyAAAA/9gIpJ/HSdrrQ7xUFJhjvzzxr2rvb6y6v68kDN4pOJS+kSSpSCoC2rSs2gXUh1zt7llJvu5fT5sGy33RJpD+QcNMn4JD596nOEmHShjUqd4YMqlxDPcKAH1ocj+xurZiuDEOIVkAAIBnpN3CvYVXddtXwiBO0rksPKssWLXvRFQ/mFl2c/6h4FD6xJDGetpUF60D6mWrefcsO3v3SAumjy1+xVpRe5Vj17QvcZL2WiEo9/Gq97+PiisEuVfYQRsiOK+rBHGDlm0529f1Jq+PeQUBIFkAAICfbO08MQmDh66GO5rFsvn9ZidkxSFfj5r7oMvi/xg1OxazzXRpqTe9K5omcUINeLRJyoXSgihqOJywL+yQLpFtposWlTPniqpmTt1v3sv9u/NrmFQyfKr4rz/LZ6AV9wo7SFZChQpr82O6+l43mQ333EGStck6IZTK0aCRLAAAwEOyc7xNG5EiMxTsqwQdZjYCD5IkWEjboapDx3YtB1T2wakdidlmOrOUMPA5KBlkwEN2jTU5Nx4HHqCLn8quR0N/Nlq+T21a4Fz3vWv/gCrvpbm/vsiu/07IvfxLxd+98/h+QXAcVZFY6pfGtXmTe1AX9x3mFaDUb7wtAAB4q84DfBXX8mPaGzzLYtH8vJza6SK7ei4kSDCpMJegzNyBwcangiAagyRzeVho8pmEIOSWFCbpeNvgv4EOGpMFTb9PVr+HpkItTlLTru+m4a8wu/afBh7QW7WqZSRzDMy1fmHrmKWaYFFjJ/5rosDj9hW0L3qLyqbDSCz1S9W5KM9Eddfc247uN3XPxZ3mCm/YQ7IAAABPmUWlBAe6CAJfys/76PvCN//7+8Mzryy16Xg3cFCmqlPBAnUPiCZwI22mHkgYlDLDvs9C7M8qAdXnGufFzpHvqfekz7LGgFST1gv5f2f73JpJ8qTpPeqLJAx6T2I3bA14Lse8kDYSq7rHHifpRD6LSc33zVxHZg4k/Nvw9V7BLng9SEj176qDnfRNqgq6at1Wt+0aiYJAkCwAAMBvE2n101df7aother47EIAUnYKndqFrbK/uSQM+j5XXNLFw6IrljUqlIJKFHQ1+LDmMZyVJAWuJLCg6rssO9Gb9oNvWgFwkFz3FjV67Zd5nekzQBC8TdDwXBL9pjpiK9e2J/nZl59f4xb3989S0RBCwtXHe0XTTQSmXdeMBPJbct9o+l0yCakLWv31qotkWd1kwWMX36OGSWeSBYEgWQAAgMfMA4UsBv9y9FXeZZup2jkF8tCXP0hU6iUaJ+lKWiqpCpwUzpUH3xIG8p63sTTJlEAf0Ndyblc5JzT0ce9Tk2SBCaBl7r7kVlrtjOzi2mkGvUuitGnwbjRQwsBWoupcktx1241VsZVqAmeCS9wr3pIEXxumkiUKOWGwt06cWfiuzR2Y36VNm++j1WoOWWfXSZrvWs7YOabJfYThxoEgWQAAgOdMACNO0t9lgedSEPhOBvCqIQ/OM3l4aLpD1jwoTiQoURb0ehgquCLninMJA6nqOHSutNnNnDM7K/+Ok/TuwEPnYJ9Z12T39bpCgCOowcZyzhGwOaCwYzH/65WF72FX1855y4S6uVb+VXJ9WHX4nVhIJUCdmQF9+mgC59qS4twrqpMgt40E8BdpiflQ9r3NNtOu2qsMwtI68Zj3kuA8mIDx7T21oM112HYFYZ3nmnzOS1f3kbqvbUtVSzhIFgAAEADpPT6Whwvtfel3sntU4060maVWS6N83sMBgwUTJGEwr7FZ6G0AACAASURBVDkce+g+uubP/9DDn3MsYO5zafaiQrIgiJ2j0vYn39lJy64CCZJ1NScnZ/3aKde8zyd+bxX735GHrgZKSxDefOdWcm+fd9GqqYE7aTmkNaDEveKAQkuzK3mfZhavcZdHrgu+BbZtrROPOT9xHpMsKJBnoKb/+aWtWSTyHataWZInCrqsWKubLKCqICAkCwAACERh1/hKSVChzL20LQhumKwmMhw7qpEw0LizFZZIi6rHEwEQrx8i5SE/D4Zzvpe7cHhI+sJycLQ3slP9obBr3sYO+Tq2sgN9xb3bHT3sgAc0eW5xf7I1YL/q7+hrIHzd94N5BQH5R+hvAAAAITEP8tlmaha9/5IHfC3MsfzLHBvBBh2ksuOP0N8H/HCsHcV9AN/btQzCJajmITl/nU54maSeaT+SbaYXco+/k92pXdjK7zf3bTNwVV3LIZx0IQlgrmkIQZtgf+tKDWkdVWWj1l0PFQWNhhtnmymVBQGhsgAAgACZBV+cpA+yS7bvXYhFW2lZEOzwO81k+OdVlbJp8+/1POATPZJrxvbAtYIHSDfs+KyOqjKbwwkS1Hn9rOUaPpbgcN524qzCrtJtoY3Sk/Sbf22tRN9qAI7JE/5NnJtZOU3nqEnV16nnnL5bsNZtQXTf0XFAKZIFAKCIlJLHfCbog+wCNLtlFlKOXnXXS1tbCTisXdulkm2mtXfiuE4ejl4fkOSB50ICT5O9YNPZUC+Va2dv5geG+oYQgH4q/PVbyf9+/WeB7642AeTHgf/8xuR+5N11RJK4JHK5V5zyLN+h/LqWnzOtkkN7O5jPCkHKqyHXDV0JcZ3oAmmneNciIXxrNlnVDeZLC8P1iRZ3fbUdKmJeAY4iWQAAAPKWMysJBo8LP20rDnbywPkgf31iR6K75LN7kc9zIQ9BJmlwIUEY+P35r0N9YMw207IkCd6+R6tQBl0DHnjIq0W6DFKWrA0IOmIoc1mzNp1N88U8J5l2b6f+RVkf5xssjv15n6XCuu+NBnWTBazxA0OyAAAA/CDB4DcBH2lhkO/+yneWH5IHk8seEOEZebghOAgAgEPywdh8ZgiFWbPK7ICvLV7yB6nGXsoGqDffIamkmVQYmL+TaoKhkmd1hhs/s9ErPCQLAADAUfShBwAAAOAyE9yPk/SdqRJo8TLO8/kHcZI2+e/vZD7BIG0LGww3ZlNQgP4R+hsAAAAAAAAAwG/SMu+fsru/T2amz+9mFtjA843qJguoQAoQyQIAAAAAAAAA3pOq6asehvLvpJLgn2b4tZIWrXXmFWypMA8TbYgAAAAAAAAABEH68I9lBsG8Zh//Y7ayG38tA8SHrCIoUydZwEDyQJEsAAAAAAAAABAUaUu0ipP0Slr0jCWgfl7hfTCVA0/y8yBDj9UOA46T9KLi68oxryBQJAsAAAAAAAAABEna7ZifZf76JYFwVvJ+fHO0PU+dqoJnWhCFi2QBAAAAAAAAAAgPg+V1kgVUFQSMAccAAAAAAAAA4K9xjVfGvIKAkSwAAAAAAAAAAH9dV3xl95pnL6B7JAsAAAAAAAAAwEMyf6EqWhAFjmQBAAAAAAAAAPipaguibbaZ0oIocCQLAAAAAAAAAMBPVSsLFnz+IFkAAAAAAAAAAH6qkix4zDZTWhCBZAEAAAAAAAAA+CZO0rMoii4rvCyqCvCKZAEAAAAAAAAA+KdKVcF9tpk+8NkjIlkAAAAAAAAAAF46Ndx4F0XRnI8eOZIFAAAAAAAAAOCfU5UFi2wzfeFzR45kAQAAAAAAAAD451hlwXO2mS75zFFEsgAAAAAAAAAAPBIn6UUURaMjr2jG5419JAsAAAAAAAAAwC/HWhB9zDbTJz5v7CNZAAAAAAAAAAB+OZQseMw20wWfNcr8xrsCAAAAAAAAAPrESXqWB/6zzfShxgFOSv7ejvZDOIbKAgAAAAAAAADQyQT3v5qfOEmPDSz+Qf69y5J/NMs20xc+ZxxCsgAAAAAAAAAAdCpWCFRtH1T2733ONtM1nzGOIVkAAAAAAAAAADoVZw9cn6oukH9+vfe3zZyCOZ8vTiFZAACAQ6RfJZSIk/SCzwIAAABAF+R5Y7T3q1eHngvl76/2/vb2wPwC4BcMOAYAwC3zOEk/1Dxiszis25fyKYqibzX/myrDti7kp42zvd01Te3vtmkkTtI2//n+Z/NS+P9PlAkD/Svs1sv/un/dsnLtMDv8Cv/7m1x3o8J14Fu2mT4d+G8BIGgSQD21pnwJrTd71X72A+Ce1lzZZ3oeRdG/4yR9lmewB1lLmGekufzznBloPMk207rPdp2Lk9Qc71+W/pz/1PgaXUSyAAAA/53vLRiraBIMq5vEwK+fzZv3PU7Sd9lmur8zqPjPL2Tg2ZvkTraZVknceE0ePvZ3XF3Jw+rB9xRBnR8Xck7k54qtJEBV+3/eTclxRvKQ/1RIIjxJMpHhhIBj4iSdyREXv79PoQe4DgT+X/9etpke6s8+q7L2bLCpo8kmm5cG/00VxxIiZweG16p14LN43tugVFzT5uvZ4JI+e2ZH/tml/Lw/8M/NGmKsOFFjsy3SvMY8BxxBsgAAAECvWUkZcdFF2YPygYexJg+/x+w/GNuq+KjjqqQs+5THE+8pPCNBqHEhMdB3UqCtkRzzfjIxkvP5SX4eSCCE7VjAtac3Zr8qMfggeIlZ2TXowH37sexvOuyiweaVaIDgX1+bbPDdfsKj+F7+WOMeSZ6/+FyxcGD2QFWqEwXSLslma6QZyQI7SBYAAADoZTPI0uTh9xgejKGSVA2MCz91E0oueZNEiJN0W2hH4H3yQD7rpfzf/QTmfoWVyhYYR6qgin/vWDJW9bW4EATPA995QuGBtiQncZ8F3qqaPH/y6NpyrKrgGO0VBZG8NptrtHNTvUUFcXskCwAAAPQiiAKcUKgcmET+JwdOMQnBW/mJCr2MV54GZYvto/YDq1WrrtCP/c/pQ+Ezec6rY6iQAdDQfvLcBMvXcl1Zu1jlJDvvbxv8p1uZUaD9vm+zBVHxd5IsaIlkAQAAgF4kC4ASsht7Ij9O9Wzu2Y9exlJ1sPY4cQB35edpnuTKz9UliQMADY0KyfMvkjxfyT3QlcRBkxY992bHvvbXKO2VbFY85y7N72Z+WzskCwAAAPQiSAIISRDM5OG5iwdM353LAMQ8cbB0LGiCcBTP1UdJGqz5/AG0YBKSn8xPnKT3cv/Tfl2pkyww9/W5Q9fKpu2Vqv5ukgUtkCwAAABQit2/CJ20GJrJDwkCe84LQZM7CZrwYA2NXluLyK7gOecpAAtuzI8kzleSkFSVOJcWRDcV/tVnOX5nWu+0aK9U1W2cpAsq05r7h6sHDgAA4LktHzBCFSfpJE5Sszvub+ltTqKgO+aB/WucpA9mMKCvLxLOu5TzdC1JRABo61zWGP+Ok3Sl7NpyJomAMuYZ4WMURf+dbaZXDg707WOtwXqmBSoLAAwmTtIs4Hf/d3ZGATiB3TAIjgSrFyQHBpHv4Dbv/8LB4APCYHbajs21gtZEACy6lR3pd3IPHHQdLn/+lezCvyr8oxcPdsx3Mdi47M9Y9PDneIlkAQAAbllJD8biwvFCfiL5+wz79AMtiBAMkgSqnMswSJIG0MoMLv0zTtLP2WbaR9AJOq0KfcnH8terwhp5xOeGBrQlDb751H+/w8HG+0aSVGYN0wDJAgAAHCIL1nzRenRHnQwDzR+YxvJXAnHuqNI71fw7jyV/n4fkw0jCKOJ4kmB7pALIh+9gnjSYScCEikho81523c4dGtRddg+6HuA4NCtb1/xib01cen2SwGS+qWbM+gg1qEoaeKTPBO9ckoqoiWQBAACeKgzHNQ9Qy+hnAmHe8VAp2HEyMCef8fjUv7dXwnwlD81XngUodhKE+VYIxuTv4ZNDgaQgSABnqbwSaivn0pMEpF6alv/L640Ku17zAJYLSZJr6RV/51hQFmG4lVYdYxfOzSqVEHv37P37t6sbP7Z7Qbv8/vytsF61rizJWVgLX5CoQQXmGjOh9Vl7MhOiytBmWy7l3sBmh5pIFgAAEBB5IJvFSRqRMFDPWtBjr4T5zYLZDJKVh2aXHpif5XU8SfCWhwBHSBBs1fPDYlX5efX6YzPwWDhH979/eeIg/9GcPNEYMDGJmz9Kdmu/JnUkMFEcWHlRSJaO2WHsjUtJPnox0LKk7cib75sZxOrQGu7efDaa7tP5Wjj6mThY0cITJ+Stz0iatzPENXruUxunvsRZ1m6+qOyS+erSiz7hMdtMT+7Qw+tnv5DJ8b74mG2m6gegBD4U2CcMOB7A//uf/3qoExD9j//9v9in118kD0d/6Tki7Ms2017PvzhJTaDlvfIPwlQPXFEK7qY4SfNhc5oCtPcSiHvQcF5J8mAiPxoTKjnzvs1cD5hIi6UvCg4FdgQxw8ChNdw7F/qFy3X3xeHk4a6QMH3Za4/3rWL7xf3E6qG/TyXG9yqZSZcVMb6Kk/RloMqo/+bZoR4qCwAACJBZ4Ep1gQuKvWt/aTFTJ/FWssu0aFzyv4fqbbvt+w80ARZZxH/q+8+uYcZi3z0SiFkrCjI8y07SlbZgtxzP67HJ+zaTXXHa2o6YRIbZuT9xefODCWTKvZCEgR/MDIMH31uFyBpuq7wdkROJgkiuu7JhQuNGyGdZ++ZJgOI6eLAWiyXtLc8Kf/U9oWC+d3/FSfpHtpkuFRyPE6SSeahr1rznWQnOI1kAAEC4HhUu6DtdeO8Nw9t3MOBVGBY9LjwQdZlIGCogrjnod0+vWPfIw+FKyY7NO0kQOBHcliCQuR4upZp7oeyaPZJZBk5U5x4iCYMrxZVVW7k2vxSu0bVnZ5Qky/OkeLE1kw9tmVbSo9r3Xb9rxefszpVEQcFaYbJA7bX1WHvL6O31Zuz4rI1jPsm92fkqu54M2SbOtOBd8DlVR7IAAIBwaVwwqXy43xsW/UPJw5CtHtiDJAtkt+JOacCI1m2OUdTayiQJFi5XpUiCYyxtc5bKvqMfJGAycfhB/EFx4HVlI2BYkiwvvabKZ5nfzzS3wjpkJAnKq2b/uTM0JwucS9Q4VnGrXuF68+M649iMnqrMNfJBZvnQluiAAQYb7xtJe0fXkpiD+UegrxsAADj4MKeNeRgyQTwTyMk2UxMoMw9C/5SBm88tDnfIoKbW84Lz1REmIBAn6ZOCQNad9Kn1pn2V7Na9kJkBmlxLwMTVAC3JSCH3NDOQ1gRW/lPuZ723xmvpUubr+UzzPdHV79NjhX8HDZlksqkQNW0vs830Sq4v7+RevXP4fb2U+99EwbFopWH4vO/3BKtIFgAAAE2cD+iZnUUSaDEPQr83fAAa8n2gRBeNSbD4ZeAdg4++JQmKJOBighL/UhZgyQMm4wr/ripSEeFysKoTcq6Z+9mFBPVceo8+yG5WLymv4nH1ustMpB7J9WUl9+ozuca4mrAxO9f/lOo//ErDvIBzF9cnQyFZAABAuNTtSvMtsCetQ5rsZKGy4FdUFignD8kPA7bI2clQzXEIg7BlhsdVyyom2/I5Bi4OEuQac0ShquWz2oP8le87STV994tIFtgR1DVJEgcmmPvfUm3goi9xktLqpkDWhlpaJzLkuCKSBQAAhIsd5P2gvYUFDCXTTYLDXwZOFIwdHKrZiiRFxgoDK58cDJhovcaouYfITuB5i6q5vt36XF3AOs46bcH5ID9fafE5czhpcEvC4A1N1RY3nt8TrCFZAABAuHjI7AEDz+A7eSj+NODLNLtrL0L9rkkA1zyMf1RwOEUmYPIgQy1dwLW6Iqmau1C8s72IPtWoinWxIoWkwe+OXGuKSBj8HGx8reBQirgnVECyAACAQCkMrPk8WM6l16YxYObaQ2Iw5GH4dsDX+ygVBcEHecygden5rEk++NiVhAEqku/c2IHr88Tj809rux9XE2/B30c0kqHrVzJs3aW5KSQMdLb98fmeYA3JAgAAABRpfFjmAV4hBYmCO5lPwPkhpA2TtoTBpSMJA86jmhxJGJjWaBMFx9EFlckCV6/JVILqZoatO5KgLLp1dIaPLRoHPo+UHpcqJAsAAAibz7v5NfF+2CrCoiRRwMNeCRIGjakMFErLH7UcSRj4miwAgiIJHY1zeo4xM3yCuwYpG2y8j0HHJ5AsAAAgbJp2f/m8q7NusoDdbVBLQaLgnkTBcZIw0BZMcaXCADVJwmCmuEXIWMExALCgMKfnD4fez1WcpFcKjqNPmtdp5yEmcOogWQAAQNg0BaUJkAvaqkArBYmCZ8rHq5Fgyr2ywyJh4CnZ8at1cOQoTlIfEwasFexTUyGjvapoaNKWSFsV3SFmh30w8wskMaJtsPE+qguOIFkAAACAIlomoZSCRMGWYca1zeR90+QypKBJSCR4p7W9oY+7etlkYR/3F4dIFd0/HRl8fBkn6VLBcfTBhUD8dZykFwqOQyWSBQAAAPgh20xJFuAX0nt2yESBCQRMSBTUI++XxlL7G0k+wT9aK39CawECBKEwx8CFhMF7T6ucfpDKQVda/GithhscyQIAAABdNA+JHAoJjAHJg+2XgQ9jLgEB1CTv20eF79utJKFwmLaqkJMk4axx+Cg7SAFPyX3OlfvJyvNWfJoHG++b0BaxHMkCAACgBQHh79g5/SvOjYFIifZ64MO4k1YDaCjbTBdKE5HLAIc+1uHqtU/jbk0fzzPujYDINtO1IzMMzj3f0e7SLIARswvKkSwAAABa+PzQy45oOEd2W60H3iG25UHOGo27LkcB7LIMjlQXaBuu7cpO18poGwi8JRsLPjvwtrz3MVEulajnCg6lDiocS5AsAAAgbDxo9oNqgXZ4/4axlGG0Q5oxp8AOadOgMYhyqWSXJfdDu6gGAtC7bDOdK0xWlvFx2LGLmzvOaYn4K5IFAACEjeCIPg8KjuhRwTEUUZnRszhJJwMPNDbus81Uw/fBJwulQyAHH/rILm27pCWICwNHAfhn5sDMl2ufgtTStvJGwaE0QbJgD8kCAACAjhHwhEvkgW/oXcE72g/ZJ1UaWt9XH3dZhm7oeSch0JbcBwYn9zoXAsA+zS5wec12zfykt0gWAAAAAChaKejvvWSndzekp7PGAONlnKQkiPxCohyuoe2dJ2Sjzkflr8anFjiuvw7WHwUkCwAAgBa+P6A9KzgG4Ch5aL0e+F3ascu8c1p3My6ksgV+IFkA19D20CPZZrpwYP3tfHWBrB1dHyJ/GyfpmYLjUOG30N8AAACggwzf9JkJflYJgmkIrqhK3NDGqR/ykKQhSL9kqHG3zHcqTtI7BXMp9o2ksmXQ+QWww1QHxUm68yCIBMBdZsf4V8VH/1pdIFV/rvJlV/7cs9ZQjZEsAAAA6IFjDwFPDg8pQ3MLJUE9qgr6sVCYLIjyoY+OB07w05OCaiUAgVKcHC9aKJgV1Yj0+r908NDLzEgWfEcbIgAAACBw8rD3XsG7cEdVQT9kJsSd0sNb0g7glQ9zO7S8BloBAuGaS4tDrVyeXeBTr3+fZki0QrIAAICw0ZsVQKRoNz+7yfuldQfdaKAAhLbBzyQL7CEJ2Y9tCC8SbpFNCNqrFp0LUktSX3PFRhPBDzqOSBYAABA2dvACiJN0rKRNyJb5FP1SXl0wp7oAFrE5oh8+JLg00LwL3kky7FhzMutaqjxdYiPBoW0Ncinr4qCRLAAAAADCpmV3+VrBMYSI6gJ0SUuQnmQBquB89Zv2fvSuVRe0vUc/Kr3PB9+KiGQBAAAAEChFVQURLYiGQXUBOqalgpHgK6qg4tZjMjhfc3WBM0HqOEknpsd/y1+zkip3bWuQ2zhJLxQcx2BIFgAAAADh0rLLbpdtpgTzhqO1l7OpLpgoOA64jesLgJzm2QUjCcK7oG1iYyfJm0jpZpGgqwtIFgAAAEAzhiV2RFlVAS2IBiSBVG3DfXO0IkJbzEIBkFspnwmhPlkgu+5vWv6aH0kbmVf13P7IrAp67UGyAAAAaMAgNxzCsMTuaNo1RTBveFrbQF06OPQRupCMBPBK2t5ovia4UFlgI5C+v+bQVvFhqjyCrS4gWQAAADSgPQDQI9kVdqvoPSeYNzBpB6A1cdvXA7u25KQPyVINfZ+5vvSHnv9wgfZWRGMFx3FM23vyvcxL+kHpGiTY6gKSBQAAAEB4NO1ce5adfhie1qBqX+cryQL7hk4W3HN96RWbP6CetN7T1vamSG11gey2H7X8NYcqGbUlcS4dSNx0gmQBAAAAEB5Nu6VoQaSH1t2W57QiQkNUFQAoo7X1nqE5QN12/bjNNtND12WNn0mQ1QUkCwAAAPMCgIBI0PVc0SsmWaCE7LbUOlTchT7O+NWQSZ6dtLYAqmJOUjg0XxvMjvYzBcfxhqwfL1v+moObEqQ10V3L32/bjbTuDArJAgAAQMk4EBZtu6RIFugSeisi2DVkwEtzX3IotN9HHf6S9mSPil+gxuqCLgYb1/3nQwiuuuA3BccAIFwfA37tLEQBAEPRFHTd0k9cHZMseK/wuF53WnK+OOd6wAOmqgDAMeuBr1HHjDUl76XS4bblr7k7dQ/PNtOHOEmfLVQw2DSLk3QR0vqDZAGAwWSb6YJ3HwCA/sRJOrEwmM4mqgqUkQf1nbLzJKcqeILjBp4zcccucQAnmPvJJ6VvkrY5PTMLv6NqAtdUhX2x8OfZMpKNNsEkoGlDBAAAAIRDWysX2qDppDWJo3noI3411Odlkl1sSgJwlCQUtc7p0VbxYGOwcdW1xVrhTL2g7ikkCwAAAIBwaAu2kizQSWuyoOudllS62DXU9WZJVQGAitRe9weuzvpBqlLPW/6aysF2afejbRf/eZykwWxYIFkAAAAABEAeOts+7FlVY5cZ+qX1c9HaWxp7pL/1zQDvy5bBxgBq0LwOuVBwDJGFqoJdgxaCGq/jwQw6ZmYBAABAA3GSzir273yRXY7soMbQtO2IelZwDChhrlda5xaYnX0kmZwwVMuzGUOwB8V7D9dovp9cDT2nJ07SCwuJ+nXd67KpDouT9H6gpPMhN+b9CKFyjWTBr860HRAAAFCp8uKZRAGUYF4B6nhSupNfy07LPrgckBjienNHImlwXNfhFAlKax3qr+F+Z2M3fdMqgaWyZEEk7ZRsDHtWjTZEv7rUdkAAAACABdoCvwSVdAt1boEaru5elJ2ofQd4tiG1iABgldb1yKDJAmkn1zYw/th005Qkf7UNoJ7I++I1kgUAAACA55QOZSNZoJvWzyeYZIHDhgjaT2g/BKAhkuPlJhYqLtoOKq48GLknIyoLAAAAAPiAZAHq0rqrnWSBYpZ2otb1jnZ/AFrQer8bujVS68HG2WbaNlmwlgHJmnhfxUayAG1ofOgEAKAvBKzgEm3rth27gHVTHHzV2FcaP817/ozuLASjAIRNbcs3aes2xJ87ttCmvfW1WdaKgw55LnEeJ6m2OWBWkSwAAABoxvt+lfCKtuQWu4Dd8KzxKJW21QqeBLX63HFpEgXet4NA77TtYkbHlA9GH2pugY1ra9PBxvu0tSKKfK8uIFkAAAAAeCxO0iuFu7FJFrhBa/UHyVqdlj1ea0gUoCvcnxA0aSd32/I9uLc1pF9+z6Oyz+R6qKqPPpAsAAAAaOaa9w2O0NgyS23JP95g6CMqkWqPm57eLRIFAGzTFozODRGQtrFr3nZ7OFtVCjZprHiwwkaywLteoz5nhwAAQHuy4wZwhca1LTs33cBcCZwk98S+5gaQKAAQkiHWcG2vsdtsM7U6Z0B+39bm77Rg4uszYetkgeLBV22QLAAAAMewqxUu0djfnWSBG7R+Tsws0MXs+Dzv4Yg+kygA0BHWJd+TvxML1/OuksfaqgtGvs4uoA0R2qD9AgAgVASq4BJ1G2GyzZQd64AH4iSdWehtXcW7bDP1eqAkgEGxLvnOxnW2q6D+SuEAci8T2CQLAAAA6qOyAC7pY8dvHVr7AmNPtplqnVlAJbgCMjz9S8dHYtpO/DPbTPtqcwQAQZKW7G03Bd91tSFEfq/V9kYWnEvS3CskC8rRhxgAAJSShXRfQxyBVmToqDYMN0Zb2hJgwZFEQdfJpHuTnPe09TEAXbjO6BxsvE/jUGGSBYFgtyAAADhE4yIVOETjJhiSBYDDComCUUevwrSZ+Fe2mU5oWQagJ0Ffa2RQr43Bxp0mkbPN9EVhheq13Be9QbIAjSjdpdaW1jJrAIASshCc8HnAIRofXti95xbaRuEHabfQZaLgzrSZyjZTba0mAMBnEwvX9b4GEGtsS+fVTJ3fFBwDAACAOpIYOJNhxle0HgKsYacwWjPXaNrT9Ed2nS47HGb8bIItiudkAIDP2ga7d30F8c0MmzhJF8paEt7GSTr3pRqOZEE5H3fNAwCgmSnfzArHt7+T9elAgPGlQUuTsvv8VaFdy1WHOyaBvqlb1xIMhCXMmeuJVBMsO7o3mgHGCwYYA8AwpHPIZcs/fN1zoNzcMz70+OdVMfelXS3JAjRFQgUA0KXrvd+9//8BuGnH5wboJ8P859LDmiQBAPjLxoDevloQFf88bcmCmS/JAmYWlGOXCgAAAHxwoew10DbGPXxmgTCthkwVQZykZl7A31EUve8gUWDaDb3LNtMLEgUAMCxpMde2vdxz320BpYrhrs8/s4JzqcRzHpUF5dqW34RA24MnAAAAfqWpnyvcxIwJT8lsngtpvzfuuIrPBHVWtCEDAFVsDObtu6qg+Od2NUenqbnSAcy1kCw4wGTXfBlM0REfkwV83gAAAACcEiepCUxMalSB9DWb51mCOX33sgYAVNN2J/xuqCoxU80QJ+mjsna1l2YGhOuJcZIFh5kFFLseDvMuWdB32RQAAAAAtLHXQkJTwOQx20yZcwcASknLnLYVqEPvol8pnG03cz2ezMyCw5hbcBwl7QAAAIqZnU18PoD3tPZHvuYaBACquTjY+A2patgNeQwlbuMkdXqDNcmCw6604fRQXwAAHiBJREFUHtjQpLclAAAAAGBYNvpNd4UBxgDQTicdMCSY3XZHvqkge7F0SG0MmrA4wOlBxyQLDmOA72E+Vl1oy0QCAAAAwEHSgkiz8zhJNSczAEC7rua9LCz8Di1Beo2JaafvfSQLDiNZcJiP5aTMKwAAAADgDBkabKq+7xQf88KBpAYABEOuyZOWr3ebbaZrDe+ZVDdouw+OZCaEk0gWHKZtQIYmJFIAAAAAYGAmYZBtpiYg8VnpZzFS2iICAFzQRZufiVyb29C2m5/qAotsJQseVbway+jNfxDvCwCgCztZUzT9oaUcACBI2WZqghLvlL72W4YdA0B9Hc0EsNGCSFVwPttMH6IoelZwKEWXrt77flNwDJpd0Z6m1KXCY2rrwe3DBwAvPGWbaScLqpKF2lVhBk/xf1NZCABu4DltT7aZrmRo5QdVB/adObYraZ0EANpobJdmfSOUPBOdt/w1d0oGG+8zVWxfdB3Sa3WBc/FGkgXHsYN+DztCAAAukt0mRUcXbVJdeCZrgStL5boASMjBEoLO5bLNdCEJg1tlh3Yuu1kZeAxAI43xvy6S4jb66Gts+ZMnzJfKntluzD1ZaXLlIGYWHEdg/Fe+vic8bAAAfsg2U1Pl8JBtpkvTCzrbTE3i4HdfWy8CAPwhMww03q/es/kMACqzGqeylEjelmzC0kTjjBznkuQkC467lCnh+MnXagvKmAEAR8nCeMK7BIc4tYsJgFUTpbN81jxjA0AltuNUNqoKtA+s11j1MHPtvmcrWeBzv3d2PrzF+wEACJa0vdA2PAso5VrJM1ADVV4nyP1KY4J7pLWFBYCgadwYa3sd520Lopysfe91HM0PI9c2nFFZcBrBcSElo172a1ZeRgUA0GXN5wE0RxsS5/B5OUqecT4qPHrTw9lG0AoAbNG489taskCuuTYGG7vQwltj9cNCwTFURrLgNNoN/MR7AQCA3xWV8M+WzxQeomqmIjPwWGklxpJ2RAAUudD2YVje1BpCC6JX8r5pW/+eu7RZxlaywOfFmvlAfe3TX5evyQLaSQAA6iBIBZdoPF8JEKItrsP1aJxfMHJtpyUAr7XddW+btTiVDDa+bvlrnrPN1KVZnxrvL84MOiZZUE3wJZKSMNF28bTFhTIqAIAS9IEHWmMjDtpi/V6D4vkF7yWIBQCDUXodsvm8YSNw7kRVQcFaYZL8xpV7Hm2Iqgk+WeBSBqwBl7KjAAAdqEqDK2ibhbba7kbsAuv3mqQtw2eFh+ZaAAqAfzQGcK2s36TdW9tk8c61mW2SJNc4jNmJijpbyQLfF2ujkAcwWbq4aMbOJABAXdw7gOaoLEBbVHg1kG2mc4XJbrPTktl4AIakcV1iK846kbZvbawcGWy8T2MyeuLCvB4ryQJHT5q6Qq4usHFx0YwddwAAwFca1znMLHCE1gda2sG1MlPYmmHFsGMAA/J5uHGILYheyVrhXsGhFI1ciC/bbEOkbdK0bdcuTa62zPfBUzxsAADqItEMV2jc1ENlgTs0fla0gWtBBlRqe74bKW0XASAM2u51jzZ+icQw284efXQ8Qa/x3qK+zbvNZEEIAVffg+a/kPZLvg42fsXOJAAA4CsJDGrjc8UqusfavaVsM13aCkZZRDsiAEPRNpvH1qYkGzvYnU7kZpvpWuHm9nPt9zubyYIQhkwFVV0gpaC+J0i0LZIBAABsU7cTO05SqgvcoPHZh+HGdtCOCEDwlK5HWg8TjpPUtFa6bflrttlm6kPVl8Y2SqqrC36z+LtCGfS3UjopvQtz36sK2JkEAAACYNY7l8pe5gVBXzTEeWOBqa6Ok9RsDPuk6LDydkRUGADoi7Zkwc5SVaiNqoKzOEl9aL2qMQltNqNfaO10YjNZYE6gDxZ/n1amXGSRbaZe77iX7GoInycPGwCAJkg2wyVmvXOj7HivbOycQ+eoLPCYaUckrRA0teB4bUckrSMAoGva7nO2rn02kgUjhS2afLLQOuyYmQXNfPC5HZGUfoYyYIqHDQBAEyQL4BKN651QKnVh1455Y9bRjghAyLxLFoQwe9QTE633OmvJggAXbWuPFzArhaXqXSFZAAAAfKdxvcPMAjdo21HY9bkcXIBanuO1Vc2PAtq8BmAg0tdfU1B9Z6mqSuVudfxipHV2gc3KgiiwYbHmQ33wLWEQJ+lKYZl6V8ywllBmbQAAgEBJMHCr7NWHsjHFWRJE0abr3slBJrFMOyKFz/I30iIJALqi7Rpja7AxrYPc4X0boijAXdqXPiUMJFHQdlq6S3wY1AIAAFCFunW6zMiCXiEmC0KmMWBBOyIAXdKWLLBRUaVypzoOOpe2UarYHHAcBdrSJU8YjF3epR5goiCiBREAoAWzU/tjxf+c/trQ4EHpkGPWY3qpm9GWbaYkCzpiKpDiJDX3tQ+KDitvR0SFAQCrJBGpaQf+tu09Tl4TLYjcM9PWeo9kgR0mYWAWVxPXFrByMVkHWqbEwwYAoBGlPZ6BYzSue8b0JVdNW2XBs4Jj8Fq2mS4UDsa8kedsG328ASCnLQm5tPA7JpJkhVuuTbVttpmqialbbUMkL2xn83c6xHwhv8ZJunSlVFJ6QL4EmijYafoiAgAAdEnpOp02RLpp+3wIFveDdkQAQkALImii6rOzPbMgYrd29N5UWGjsOZUzGas4Sc3n9GfAWcfQz1MAABAebeufSwKAqmkbQs36vQdSKX+v7LBGVCEBsEWGAGtqzXjXtq25zIHSdt9Gdbea1sQkC7phyja/xEn6oilpYOYqxElqduT8xXR0zlMAABAcjTuz1fXFx/fnBmVvw455Bb2aK6xEupHKeABoS9u1xEZrU6oK3KfmMyRZ0K08afDNDBAeYnFjMqZxks5N4sK0SVI42G4onKcAACA0WucWQB9tnwtr9x7JXB4b/bNtox0RABs0dQK5k2tuY3JdvB32ZcACNeel7QHHr/1Q4yTdKhuKNLSRfHFNWclOFrvm58n2DhkpPbqSBf6Yz6HUlnkFAAAcpW2wKSwwD6Nxkj4rK1MnWaAT8wqwlMCFpufJvB0RFQboUuhdGLymsF2PjcSs2jboqOXcdKfJNtPB2+5ZTxaItfTux69Gsrv/dYd/nKSRlHg+ybDhPKP4Tf5emYvCQ/yZLObP6E9WGTuTAAA4jmSBv8wDyCdFr87MLbhou6sO1mlL4pAs6Jnpnx0nqWmN8UXZob22I8o2U84JAE1oatfzaGkjKy2I/DHXMKOnq2TBA8mCWkaSvSaD3Q8WlgDwFoFhIBxaWxExvFQJ2XU5UnRI920HP9ZApUuB2d1oWtoq3JS2kiRjX+cFAA9Iux5NlUmtZxXIjKG2FWB/ZJupxtZznYqT9EFhHNZsohkPPaepi5kFkWT5tQ1EAl6xCwUAfkHLOiAQsoPtWdmrpaWILlQVoEjjjtURCUYADcwVJcMfLQWEbVyjQ72ean3dg7eV6iRZIFjUQaN7PhUAABA4bQ9HNwwtVUVb8obnygFJMOtR4aG9tiNScBxAF6j67Yam3v42qgou8hbnLfRZvaeKzAbQuNH9Vj7bwXSZLAiuhAVO4GEDAACETuN6iKCfApK00VSSH2wQQxmt/bBXJBrhKap+LTODYxW9r3eWqgpsJD9Cj5Fpff2DJra6mlnwWuIcJ+mWixwU2Q15IZDMIDsECqS/XhvfLA0EAgAgGGaYcJyk9xZ2o9k0oa2ICtpaEAV9TphAuIZkiTzbf4yi6MPQx7Inb0dEshHAKa138ltk61hIFrRnNrrfKjyu+ZDnbGfJAmHe9E8d/xlAVeuBF9szhQvsoX1t+ec/MogOAIBGVsqSBTcysPRFwbGETFPQdcussehK0VDypTzPaNsM+NqOiHMFwCHKqgo+2ljrSBu2tq/pLvTqPUmGPysc5D8y5620Supdl22IInkIYdAxtGC3GgDsoXwfCJME1rbKXrymXsKh0pQsIPiriASUaEcEwEVaqgq2Flu2U1Vgj9ZY4WD33E4rC8yCIk7StdKSDoRla6knHAD45opPFCU09SyHkHV1lYDYquJOpJWyqseZsjYBQZFdiiNFr5kZeMqYJKPCFmYR7YgAHBIn6UJRVcHcxk5+S4ONd1Rk/bBS2hXn0rTuHiKW2XVlQcSCH0pQVQAAAJwlu2ZvJJFz6qfqjKSlsirgc2kVgGFoeu8faUml1lxp94AbSXgBwCtZO2mpiLq3GJynqsAiSeDcKT28QWLqnScLZJGn9U1HONiZBAAAXGZ9Ro88HGl7WGSj0QAKySgtOA+Ukud7rZ8P7YgAFK2UVMztLCctbCQL2FD7ltb349pUF/T9h/ZRWRCx2MPAgh/aAgBH8FANuKGrlmHa1unnQzwUQd1g46Hah2przaeyVWC2mZqNWM8KDmXfKMAAWNVKMlQQJyntOT0hawktSfC5rWo5S4ONadO9R94PbbO8cr1Xx/SSLKC6AAOjqgAADuOhCHBDJwF0pet0Nhr1T9Pg2iE/f00zGyLlCX2tw45Da0ekpRe7L9hE4wGpMNJSOXlfcY5UVTaub7QgKqc12Xwjcyp601dlQcSiHwMx/U6fePMBAKiGXXVq1Rk6XXfto22dPkjJdajkO3+p5OVvLQdV0BHZhflZ6fu76juwAkAVTe2HrM0DkiTIrYVfxX22nOb3pde1em/JAtm19LGvPw8QJKkAwB3s5tKBz0GZBgmcWu0XZZ2uLehHZWh/NO0Q17pbHeUWSocdh9iOCMD3NdNMUfuhieWW2DaqCrZsqC0n6+F7jcdmkkR9JsH7rCyIZNGvcTEBPz3Shw0ATtK0e1fLzlZAm1rf04brH21Bv0t54EeH5MHTxi5FG8zandYIDpEgmNbvqalQIvkEBEQ2V2jZbPBHB/EoG9c0NmMcp3kd0ttm6F6TBcoXE/APVQUAAMAHdZIFjQL+sk7X9gDJWq57VBWgFUnwPCp9Fz/RWg+ukpYzqEjeLy3th+5kELw1kty3sbGKpPwR0gpR6yb3276uC31XFmhfTMAfVBUAQDU8iAD61Ql2NS4tzzZTE5zfKno3zuMkJWHQEQk8aNnI9Zm2CE6bKQ6urAi6wlEkuupZKqlSfu4o+W3jfn0vrXZwnOY2dr1srOg9WSA0LybgB3YmAUA1tP4BFJOA7nmNI2zbG1dbFfCcQF9nFkp2YG6pIjnIiXNfgk9aW1tc+tp2gyHOneB+4yBpOaahpZ6Jc44tzynI2YhxUVVQjeZ7Ri/r4kGSBbKYoB0RusLOJAAA4Iu6c0VarYGkMvNO0Xs3or+ufdKaRcusgnlHgRUfOLOzWGFlUtGtpzNQSBbYx25+x8RJaob+flJw1J0lCuT61Ta5vyNZUI3ErJ+VHt6oj83RQ1UW5O2IND2IwA87diYBgLviJNU0cBnQoG7gwkZ5+VxZFfAt1wbrtCRg7hhq7BXNAfkvzC8A/CLfaS0tY8Ydblq1UlVAYr4W1dUFXf8BgyULxFxxtgZuYmcSAFRE+TrghLpB8tbJAllLaQv60XfcEmnXcK3gULaaWodyT2xPYWXSvjXXEcAPkih4UNJO711XiQLZLMFg4/6tFbfPH3VdLTdosqDwIML8AtjwKJPLAQDVEBhBGXZwKyFBrboPiFYeVhVWAZ9TPdqeBMS1vI8TZZt8uCfaoa0yqehc+eDKukh8IEgKEwVdXldsBIV3VPHVI+sTze9Zp2u5oSsLIsm+MYwWbe2YgwEAXqBFAPBT7cSN5eDrXFkP8ve0I2ptpSS48gczxvwk1yDNz/c3Hs0vYM2E4ISUKJAEv435QiQKmtGcXD7v8l42eLIg+r6gMB/AZwWHAnfNZQgJAMBt7JIDfqobGH+0+d5J0G+i7POgjUhDcZIulLQfMnMKGFrtMXm+t3o9smzBdQQHUGGkWGAVBZHFxCvJggaktZ7Wwf1Rl9UFKpIF0fcPYc7AYzR0R/shAADgocF30cvu73eK3toRD731ye6zDwoO5Zmq8mBo/px9aUdEwsM+TckCPt+COEknShIFuz4SBZLQpAXR8DRvbjjvquJWTbIg+v4wMmPgMWrigQMAmuMhBFBKSs/rzit46OLVyAOxpk0913GSsjO9ItmJqeH9MgGWsbI5BeiIJBo/Kn5/fWhHRBsiv/H5Crnn/6kkUTDuabPq3NLrJVHQjvbEcifVBaqSBWJMwgAVvc4p4IEDABrjIQTQq8lOoc7WRLKpR1Nbkfce9R3vjKKWDS4kCmg/Yt9SeQuHpSRmAShkvp9xkprE43sFR7eV+1hf83ZsrXE62UgSClm33Ct+udddVBeoSxbIB0HCAFVMGIwGAIB1JJF0aLLw73pdNFG2Rv9CwuAwZb2dXVi3EzS2TJ7tNX9HaWsGKCX396cGVZZdMGufq77uY/Lazy39Oq5x7WmvLrB+n9VYWUDCAFW8k2EjAAC/EKwZHu2pdGgyWPilyyMvDDzedfnn1ETCoITCIZCs2wMln73mXZmXMvwbdri+jmPDxMCkmsBcN74ouYfdDVAZZ+ua9EwnjvZk5oOmte++W9tVciqTBREJAxz3kYHGAOAtkgUIngzxq/2AnG2mnSYLCn/GmISBXlKOrilR4Mq6XeP9x5fA5Ux5oOVDV0MiA+T6Ok7DdTNIZqCvJO7+Nq1VlLwHJvbUa+try1UFJOrt0V6hYTXprTZZEJEwQLm7bDNl5wcAAPBZk8B3b+tlKcPXmDCYKziOQcl78JVEQSMag5wjE0BTcBytyHO99me4tYPvNZWAcF4hSWA2I3xQ8nrM+uZfA8WebG5+IFlgj/ZkgdXqAtXJgkgWFtlmeiWlPwjbnQzXAwD4S8tOopBR3TEgWejfNDiCXsvMlSYMPsVJuvIhuFqXBFvMg+wnJYfkWqJAMy+qC7LNdKl8E6CL8ws09HIHGjHt8sw9O4qif0uSQEtVRz6foPfrgVQ42XwWYsanPS4kXqzFS9UnC3ISJP6o42gwABIFABCIEAN9ytgqfUZN0me+6cNp7w+EShMGt+aBTt7LIEhw4alhkqkLriYKtCZKfTqXtT/PXTO/oDVnz1fbPb9R/h6bCrg4Sc096y+5Z2vy2WxW7qOt4wFWrz8Dvg7vSIWc9q43c1vP0c4kC6LvH4754vxLeb9D2PcHiQIA6ITW/rwMl4P3ZCf4xASmzCC/OEm/yYNz052igwywKyQMND1AmffwL3lvvU0+yjm0krZDGpJ8edsGVysKtCZKvTmH5XrxWcGhHPNB5saopnjGgssBd5IFHZAKgjxB8LdUwGmrisnvX4O1M+ygquDR4u/Cd9qTL6Y6x8o5/JuNX9InUwokX6IVZXdBoIQZADogATStLX/G9NhEwVkeFMk2U6fOC9ndfiYBiOLPVQfl9oO9NyYAWBiqq2l9btoazEyQYoh2Al2S2QQLRW0bTKBlLMFg2OXb4F1z3k6UV7GZdmbaz2etSaRLs8bscyAsdJFnjLF8z8cOVKyaoPpEwTlLVZN+mqo4DzGJuWXb89m5ZEH09oFkqbBsCXbwwAEA3dI8CHTCgnkYSkvwL2XntDm+/X9WtmvqpaedP2cHqmCCnLshDyV5/2FN63MTpPgzTlJzrixcSzjti5N0JtdHTcGXZwm00O6gG17tdjbXCkl2/angcA4ZFRIGWoPempNIK1nLoZ2xXPPNtfWbxtiIrBsv5Hy8kh9X2lnuZF2wHPpA5Jpoe/1IpUyYRhIrb9WdJc6yzOl3T0oEV4p21aA9LZldq6T/pZbp/r54zDZT33ZboUP/73/+66HOQuw//vf/Yh8/D9nt/JeCQzmGyrIBKAz0orr/1hKslYdeLYN295l15tK1SgOlSQLjziSfXV+3yzOl5uD1P33bRGXarzmQXH2WDWyqzm/Zuf2iPAbyLwevs648r+cbJYqbI4qJ8Ccb56ycZ/mmiOL/zp+/Xd4ccS/3rsHXTXJ//9LRr1ezNvSB2bEfRdF7R15Kq2dp55MF0c+L2MqBchCc9lFmU3iHZEEnSBagFpIFPxIFD44k2Z8lqEfSoAcdP6ygY9lmqup6VRjWrHWH4VZ2Xq20BrrlGWcmlWDa3sedBFq8uD7HSbpW/ix5n22mXu3Ulh3JTw6sR1QlDOS64EKHBac6Bcj5uPa01fW2QsXlWSBtvrdy71KRyOohUW2SIjPagrXnSJJ23+emczi8SBbkqDJw2lYuYt72qCZZ0AmSBajFh2SBLFSKP1XkJcJXjifW851U3yTAEMlfXxfAPt9DukaiwH3akgWRWxt67iVItNbwQC3PNBPFwcBnWbc7v9NdAoQLRyqq7rLNtFVbAW0cej4aPGEgbZhncm1wJd6xk8TGg+Y1msIZMLAvPxdb93K3Qb7P456uf1s5v1WscVwk61ltc7mqarRm8ypZEP38EBcOlYYgij5LrzivL1wkCzpBsgC1eJIs4FpyWnEH1cve/35iHs5PEihbhdpn3ycakwU5SUYtHQnEPEri4KGva4V8D4vDIDW/T413qQ2lMGg8Khk07uKDf57c8uJ+FifpkyOfg5XZHHvnY1Qy/6b4/y8c6v9+yk42eBSTBlVmDFlpqVNGPotVIDvqQ9Z5uzwJ/uf2v9P5d17D9/m+8D18oUXRT3vX5v22W1eeJBMfCxvtfmy4K7vOepcsyPHw64RHuWgHEbQhwNcJkgWohWQBuG58x+YK/2hOFkQ/1+ZLB6ub8gerl/yvbR6u5WH0ojAI0pVhkM+yble1O1jOq1khARAF1E4jl1fdFR/8j1G1y1uCbF8VHEoVrXcnOzKrQZPfbZ+vrIGCcSebUjsPiMdJ6nJg9dAmqzdcbhcum1YuCombKMC1winPkkQy97bVb7qPtTm5IIxl8bHghqzKVi7a9KAGAKBH8oA8lx/K7dEbWZtPpMXO0qHdstf7zxFxkkaFXbJ1fo+LdhIY1RokuCCB/uPcqnOOqUkWmEBwnKSfHQncjuR8+xAn6WPJP39yrfImJKyBgtFbksAT54U12bH7iMuzRWfEhE+6LCRPHrxNFuQkC03SQIedXLSXob8RAAD0jZ68Xtu58uLMUEHZWet6wGYUwHPFvVQTEHBB1xYSzHHpelD2/b+W6xqUcawdHupTNZMAcJ33yYIcSYNBMVAFAICByNpn5VHfY/zKqZaOsh5cxEm6cmi4bEgeZYMPQ+PRC3NNkIQ2g/ZhlVSzLWg34q17iTPRtQKwKJhkQa6QNLiQm8aE7HJnzIPGigs3AADDkJ10BF+gkuxYn8ksFpIGw6NVKAZjzju5Z7GpD1bIZok/eTe98yybYNZUvgHdCC5ZkCs8nJxJwmBOttkKU/61lvKvIAYXAwCg2IwPJwhOPyyTNBgcSQJoYe5Zf/NpANhzL7NWSBAAPQg2WZCTMmizMF5JtcFckgeU6tdD+RcAAMAwvHhwLkkaUAHcLZIEUMVcA+Ik/cjQaiB4z5IceDCzjkJ/M4C+BZ8sKJIHlNdha3GSXsnOhjEVB6V2eWaXWQQAAACD8modtlcBPJP1ORt57LmXKmBmEkCjpePDzwHUs5XZS0+SHODeBAyMZMEB0kLHLFIiqTiYSOJgHPDC5blQ+sUFHAD02B7YWfxSccfxU8tg44X81GUCgVcN/0x6GgM/edn6UTajmMDhUnpPz2hR1Bg9nuEEGXa85rsOeOmx8HxiYkpPbDwF9CFZUIEsqJfyE0nVQZ44uPJ0p9Muz+xyEQcAVcxu0AUfSTOyAQDwxVYCwN7PiZKNKg9xkuYtQ83PjYJD04wEAVzle7Jgf5PHoU0bvm3Qu5KNImXGe3/vjA4PTnqUg87P6R9/JZ4EuCPOsoyPqyUpkb4qJA8uHLuxPctiJS/9euKBAgAA98VJutyr3jgUkKhShTLYg57sKi9TVp3SpGLFhUqV/AH8W6GPr/dJgmNkDT4pVACH3rak2Cb0IYT1vGziWsr/3b++fTuWSHOxUvrItTB36PpXDNKutM+pkO/2v1v8ikMVl6e0vhdkm2nc9ncgTIW4UhV1qnqPJWmqKLtWFv8eiQAlKp5Dp+4jpedLtpme+u80vy/7z0Nl6q4Jjq4xDnhpujaT9U6V77GNf29OsqBDhQ8z/1Llf73osRphVziB8wV0HhBofKICAACE4sjDV9lOyKuWu0HfPHzQ+rE6CaTmPyG0KtsVqoCDTx7BL3GSro4E/PcTQ50HKw/cB/b/3plUgPKMDQBwFsmCgUk7hP2McJ3Mb9kDJJldAAAABK2QPLjyoHXorlgFHErlAAAAAPpFsgAAAACA9wo7g4vVv9r6Yj8XWk19K7QIZSMQAAAAOkeyAAAAAEDQ9lqMFNtLtRm6+VwyI6TYPuXHrBDaTQEAAGBwURT9f27QV+Rq+GGVAAAAAElFTkSuQmCC"
+
+## from https://github.com/Su-informatics-lab/cdis-manifest/blob/feat/ardac-branches/dev.ardac.org/etlMapping.yaml
+etl:
+  enabled: true
+  etlMapping:
+    mappings:
+      - name: ardac_case
+        doc_type: case
+        type: aggregator
+        root: case
+        props:
+          - name: pat_id
+            src: submitter_id
+          - name: project_id
+          - name: group
+            src: cohort
+          # - name: cohort
+          - name: study_site
+          - name: actarm
+          - name: irAE_status
+          - name: days_180_irAE
+          - name: days_180_survival
+          - name: days_90_irAE
+          - name: days_90_survival
+          - name: days_to_death
+        parent_props:
+          - path: studies[study_name, study_id:submitter_id]
+        flatten_props:
+          - path: demographics
+            props:
+              - name: gender
+                value_mappings:
+                  - female: Female
+                  - male: Male
+              - name: race
+                value_mappings:
+                  - white: White
+                  - black or african american: Black or African American
+                  - asian: Asian
+                  - Unknown: Unknown
+                  - american indian or alaska native: American Indian or Alaska Native
+                  - native hawaiian or other pacific islander: Native Hawaiian or other Pacific Islander
+              - name: ethnicity
+                value_mappings:
+                  - not hispanic or latino: Not Hispanic or Latino
+                  - hispanic or latino: Hispanic or Latino
+                  - Unknown: Unknown
+              - name: year_of_birth
+              - name: age_at_index
+          - path: audits
+            props:
+              - name: drinking_frequency
+                src: adt0101
+              - name: drinks_per_day
+                src: adt0102
+              - name: frequency_of_heavy_drinking
+                src: adt0103
+        aggregated_props:
+          - name: visit_day
+            path: follow_ups
+            src: visit_day
+            fn: max
+          - name: visit_day_set
+            path: follow_ups
+            src: visit_day
+            fn: set
+          - name: laboratory_test
+            path: follow_ups.molecular_tests
+            src: laboratory_test
+            fn: set
+
+      - name: ardac_follow_up
+        parent_props:
+          - path: cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_death].studies[study_name, study_id:submitter_id]
+          - path: demographics[gender, race, ethnicity, year_of_birth, age_at_index]
+            value_mappings:
+              - white: White
+              - black or african american: Black or African American
+              - asian: Asian
+              - Unknown: Unknown
+              - american indian or alaska native: American Indian or Alaska Native
+              - native hawaiian or other pacific islander: Native Hawaiian or other Pacific Islander
+        doc_type: follow_up
+        type: aggregator
+        root: follow_up
+        props:
+          - name: project_id
+          - name: follow_up_id
+            src: submitter_id
+          - name: visit_day
+          - name: bmi
+          - name: child_pugh_score
+          - name: lille_score
+          - name: maddreys_score
+          - name: meld_score
+        aggregated_props:
+          - name: laboratory_test
+            path: molecular_tests
+            src: laboratory_test
+            fn: set
+          - name: specimen_type
+            path: aliquots
+            src: specimen_type
+            fn: set
+        # joining_props:
+        #   - index: case      # the index to join on
+        #     join_on: pat_id # the identifier to join on (it should be in both indices)
+        #     props:
+        #     - name: gender
+        #       src: gender
+        #       fn: set
+
+      - name: ardac_biospecimen
+        doc_type: aliquot
+        type: aggregator
+        root: aliquot
+        props:
+          - name: project_id
+          - name: aliquot_id
+            src: submitter_id
+          - name: specimen_type
+        parent_props:
+          - path: follow_ups[follow_up_id:submitter_id, visit_day].cases[pat_id:submitter_id, case_arm:actarm].studies[study_name, study_id:submitter_id]
+          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_death]
+          - path: labs[lab_id:submitter_id, lab_name:name_of_institute]
+          - path: follow_ups.demographics[gender, race, ethnicity, year_of_birth, age_at_index]
+
+      - name: ardac_lab_result
+        doc_type: molecular_test
+        type: aggregator
+        root: molecular_test
+        parent_props:
+          - path: follow_ups[follow_up_id:submitter_id, visit_day].cases[pat_id:submitter_id, case_arm:actarm].studies[study_name, study_id:submitter_id]
+          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_death]
+          - path: follow_ups.demographics[gender, race, ethnicity, year_of_birth, age_at_index]
+          - path: aliquots.labs[lab_id:submitter_id, lab_name:name_of_institute]
+        props:
+          - name: project_id
+          - name: molecular_test_id
+            src: submitter_id
+          - name: laboratory_test
+          - name: test_result
+          - name: test_value
+
+      - name: ardac_lab_result
+        doc_type: molecular_test
+        type: aggregator
+        root: molecular_test
+        parent_props:
+          - path: follow_ups[follow_up_id:submitter_id, visit_day].cases[pat_id:submitter_id, case_arm:actarm].studies[study_name, study_id:submitter_id]
+          - path: follow_ups.cases[pat_id:submitter_id, case_arm:actarm, case_group:cohort, study_site, irAE_status, days_180_irAE, days_180_survival, days_90_irAE, days_90_survival, days_to_death]
+          - path: follow_ups.demographics[gender, race, ethnicity, year_of_birth, age_at_index]
+          - path: aliquots.labs[lab_id:submitter_id, lab_name:name_of_institute]
+        props:
+          - name: project_id
+          - name: molecular_test_id
+            src: submitter_id
+          - name: laboratory_test
+          - name: test_result
+          - name: test_value
+
+      - name: ufcdc_meta_data_collection
+        doc_type: core_metadata_collection
+        type: aggregator
+        root: core_metadata_collection
+        props:
+          - name: project_id
+          - name: core_metadata_collections_id
+            src: submitter_id
+        flatten_props:
+          - path: submitted_genomic_profiles
+            sorted_by: updated_datetime, desc
+            props:
+              - name: genomic_profile_id
+                src: submitter_id
+              - name: genomic_data_category
+                src: data_category
+              - name: genomic_data_format
+                src: data_format
+              - name: genomic_data_type
+                src: data_type
+              - name: genomic_file_name
+                src: file_name
+              - name: genomic_file_size
+                src: file_size
+              - name: genomic_md5sum
+                src: md5sum
+              - name: genomic_experimental_strategy
+                src: experimental_strategy
+          - path: gene_expressions
+            sorted_by: updated_datetime, desc
+            props:
+              - name: gene_expression_id
+                src: submitter_id
+              - name: gene_expression_data_category
+                src: data_category
+              - name: gene_expression_data_format
+                src: data_format
+              - name: gene_expression_data_type
+                src: data_type
+              - name: gene_expression_experimental_strategy
+                src: experimental_strategy
+              - name: gene_expression_file_name
+                src: file_name
+              - name: gene_expression_file_size
+                src: file_size
+              - name: gene_expression_md5sum
+                src: md5sum
+          - path: slide_images
+            sorted_by: updated_datetime, desc
+            props:
+              - name: slide_image_id
+                src: submitter_id
+              - name: slide_image_data_category
+                src: data_category
+              - name: slide_image_data_format
+                src: data_format
+              - name: slide_image_data_type
+                src: data_type
+              - name: slide_imagen_file_name
+                src: file_name
+              - name: slide_image_file_size
+                src: file_size
+              - name: slide_image_md5sum
+                src: md5sum
+
+      - name: ufcdc_slide_image
+        doc_type: slide_image
+        type: aggregator
+        root: slide_image
+        props:
+          - name: project_id
+          - name: slide_image_id
+            src: submitter_id
+          - name: data_category
+          - name: data_format
+          - name: data_type
+          - name: file_name
+          - name: file_size
+          - name: md5sum
+        parent_props:
+          - path: core_metadata_collections[core_metadata_collections_id:submitter_id]
+
+
+      # - name: ufcdc_gene_expression
+      #   doc_type: gene_expression
+      #   type: aggregator
+      #   root: gene_expression
+      #   props:
+      #     - name: project_id
+      #     - name: gene_expression_id
+      #       src: submitter_id
+      #     - name: data_category
+      #     - name: data_format
+      #     - name: data_type
+      #     - name: experimental_strategy
+      #     - name: file_name
+      #     - name: file_size
+      #     - name: md5sum
+      #   parent_props:
+      #     - path: core_metadata_collections[core_metadata_collections_id:submitter_id]
+
+        
+        # - name: ardac_lab
+        #   doc_type: lab
+        #   type: aggregator
+        #   root: lab
+        #   props:
+        #     - name: project_id
+        #     - name: submitter_id
+        #     - name: name_of_institute
+        # aggregated_props:
+        #   - name: specimen_type
+        #     path: aliquots
+        #     src: specimen_type
+        #     fn: set
+        #   - name: laboratory_test
+        #     path: aliquots.molecular_tests
+        #     src: laboratory_test
+        #     fn: set
