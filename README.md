@@ -5,7 +5,7 @@ This is uf cancer-data-center application development code using gen3. To start 
 ```
 minikube start --kubernetes-version v1.27.11 --memory 24g --cpus 4
 sudo sysctl -w vm.max_map_count=262144
-helm upgrade --install gen3 ./helm/gen3 -f ./ufcdc_config/major_config/gen3_config_v6.yaml
+helm upgrade --install gen3 ./helm/gen3 -f ./ufcdc_config/major_config/gen3_config_v7_less_downlaod_options.yaml
 ```
 Then create program node and project node, and instructions is same as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md), then upload tsv files in [demo-data](./demo-data) folder following same guidelines as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md).
 ```
@@ -59,6 +59,23 @@ kubectl delete pod --field-selector=status.phase==Succeeded
 
 kubectl scale --replicas=3 deployment/sheepdog-deployment
 
+other codes I used myself:
 
-
+```
   tierAccessLevel: "regular"
+
+  kubectl get pods --all-namespaces
+  kubectl get nodes --show-labels
+  kubectl label nodes minikube role=jupyter
+  kubectl describe pod hatchery-minghaozhou01-40gmail-2ecom -n jupyter-pods-gen3
+
+  cd ./gen3-helm/helm/gen3
+  helm dependency build .
+
+  resart services related to security and accessibility:
+
+  kubectl rollout restart deployment fence-deployment
+  kubectl rollout restart deployment arborist-deployment
+  kubectl rollout restart deployment guppy-deployment
+
+```

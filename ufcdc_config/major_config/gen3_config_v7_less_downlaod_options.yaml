@@ -1,7 +1,7 @@
 global:
   hostname: ufcdc-portal.org
   dictionaryUrl: https://scymz1.github.io/cancer_commons_dictionary/schema.json
-  tierAccessLevel: "libre"
+  tierAccessLevel: "regular"
 
 fence: 
   FENCE_CONFIG:
@@ -17,7 +17,8 @@ fence:
       anonymous_policies: []
 
       # policies automatically given to authenticated users (in addition to their other policies)
-      all_users_policies: []
+      all_users_policies:
+      - public_programs_reader
 
       groups:
       # ARDaC administrators
@@ -119,20 +120,22 @@ fence:
         - /open
       - id: all_programs_reader
         role_ids:
-        - reader
+        - guppy_reader
         - storage_reader
         resource_paths:
         - /programs
+      - id: public_programs_reader
+        role_ids:
+        - peregrine_reader
+        - guppy_reader
+        - fence_storage_reader
+        resource_paths:
+        - /programs/Project/projects/demo
       - id: CC_admin
         role_ids:
-        - reader
-        - creator
-        - updater
-        - deleter
-        - storage_reader
-        - storage_writer
+        - admin
         resource_paths:
-        - /programs/Project
+        - /programs
         - /programs/Project/projects/demo
         - /programs/Project/projects/UKB
         - /programs/Project/projects/ADNI
@@ -212,11 +215,29 @@ fence:
             action:
               service: '*'
               method: read-storage
+      - id: peregrine_reader
+        permissions:
+        - id: peregrine_reader
+          action:
+            method: read
+            service: peregrine
+      - id: guppy_reader
+        permissions:
+        - id: guppy_reader
+          action:
+            method: read
+            service: guppy
+      - id: fence_storage_reader
+        permissions:
+        - id: fence_storage_reader
+          action:
+            method: read-storage
+            service: fence
 
     clients:
       wts:
         policies:
-        - all_programs_reader
+        - public_programs_reader
         - open_data_reader
         - CC_admin
 
@@ -1116,19 +1137,6 @@ portal:
               },
               {
                 "enabled": true,
-                "type": "export",
-                "title": "Export All to Terra",
-                "rightIcon": "external-link"
-              },
-              {
-                "enabled": true,
-                "type": "export-to-pfb",
-                "title": "Export to PFB",
-                "leftIcon": "datafile",
-                "rightIcon": "download"
-              },
-              {
-                "enabled": true,
                 "type": "export-pfb-to-url",
                 "targetURLTemplate": "https://terra.biodatacatalyst.nhlbi.nih.gov/#import-data?url={{PRESIGNED_URL}}",
                 "title": "Export All to Terra",
@@ -1263,19 +1271,6 @@ portal:
                 "rightIcon": "download",
                 "fileName": "manifest.json",
                 "dropdownId": "download"
-              },
-              {
-                "enabled": true,
-                "type": "export",
-                "title": "Export All to Terra",
-                "rightIcon": "external-link"
-              },
-              {
-                "enabled": true,
-                "type": "export-to-pfb",
-                "title": "Export to PFB",
-                "leftIcon": "datafile",
-                "rightIcon": "download"
               },
               {
                 "enabled": true,

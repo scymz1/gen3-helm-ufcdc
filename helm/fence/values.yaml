@@ -1721,7 +1721,7 @@ FENCE_CONFIG:
   # -- (list) List of enabled login options (used by data-portal to display login buttons).
   LOGIN_OPTIONS:
     - name: 'Login from Google'
-      desc: 'description'
+      desc: ''
       idp: google
 
   # -- (string) Default login provider. - must be configured in LOGIN_OPTIONS and OPENID_CONNECT - - if several options in LOGIN_OPTIONS are defined for this IDP, will default to the first one
