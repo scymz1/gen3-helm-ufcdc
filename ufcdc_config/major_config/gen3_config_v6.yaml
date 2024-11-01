@@ -2,6 +2,7 @@ global:
   hostname: ufcdc-portal.org
   dictionaryUrl: https://scymz1.github.io/cancer_commons_dictionary/schema.json
   tierAccessLevel: "libre"
+  tierAccessLimit: "20"
 
 fence: 
   FENCE_CONFIG:
