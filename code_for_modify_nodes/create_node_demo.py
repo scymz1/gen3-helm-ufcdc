@@ -39,7 +39,7 @@ tsv_file_paths = ["/home/exouser/cancer_data_commons_ver/study_node_modified.tsv
 "/home/exouser/cancer_data_commons_ver/samples_modified.tsv", "/home/exouser/cancer_data_commons_ver/slides_modified.tsv", 
 "/home/exouser/cancer_data_commons_ver/slide_image_v4.tsv"]
 
-tsv_file_paths = ["/home/exouser/cancer_data_commons_ver/genomic_profile_v4.tsv"]
+# tsv_file_paths = ["/home/exouser/cancer_data_commons_ver/genomic_profile_v4.tsv"]
 
 # Create the nodes
 for file in tsv_file_paths:

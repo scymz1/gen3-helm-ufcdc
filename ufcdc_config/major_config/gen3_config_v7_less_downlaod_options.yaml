@@ -2,15 +2,30 @@ global:
   hostname: ufcdc-portal.org
   dictionaryUrl: https://scymz1.github.io/cancer_commons_dictionary/schema.json
   tierAccessLevel: "regular"
-  tierAccessLimit: "5"
+  tierAccessLimit: "10000"
+  # postgres:
+  #   # -- (bool) Whether the database should be created.
+  #   dbCreate: true
+  #   # -- (string) Name of external secret. Disabled if empty
+  #   externalSecret: ""
+  #   # -- (map) Master credentials to postgres. This is going to be the default postgres server being used for each service, unless each service specifies their own postgres
+  #   master:
+  #     # -- (string) hostname of postgres server
+  #     host:
+  #     # -- (string) username of superuser in postgres. This is used to create or restore databases
+  #     username: postgres
+  #     # -- (string) password for superuser in postgres. This is used to create or restore databases
+  #     password: qianqianSong
+  #     # -- (string) Port for Postgres.
+  #     port: "5432"
 
 fence: 
   FENCE_CONFIG:
     MOCK_GOOGLE_AUTH: false
     OPENID_CONNECT:
       google:
-        client_id: xxxxx
-        client_secret: xxxxx
+        client_id: xxx
+        client_secret: xxx
   USER_YAML: |
     cloud_providers: {}
     authz:
@@ -263,7 +278,7 @@ fence:
 portal:
   image:
     repository: minghaozhou01/cancer_commons_portal
-    tag: v3
+    tag: v4
   gitops:
     json: |
       {
@@ -388,6 +403,13 @@ portal:
                 "icon": "profile",
                 "link": "/identity",
                 "name": "Profile",
+                "color": "#A2A2A2",
+                "tooltip": ""
+              },
+              {
+                "icon": "exploration",
+                "link": "/getAccess",
+                "name": "Get Access",
                 "color": "#A2A2A2",
                 "tooltip": ""
               }
@@ -577,7 +599,7 @@ portal:
             "buttons": [],
             "guppyConfig": {
               "dataType": "case",
-              "tierAccessLevel": "private",
+              "tierAccessLevel": "regular",
               "nodeCountTitle": "Participants",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project" },
@@ -607,7 +629,8 @@ portal:
               },
               "accessibleFieldCheckList": ["project_id"],
               "accessibleValidationField": "project_id"
-            }
+            },
+            "getAccessButtonLink": "https://ufcdc-portal.org/getAccess"
           },
           {
             "tabTitle": "Follow Ups",
@@ -730,7 +753,7 @@ portal:
             "buttons": [],
             "guppyConfig": {
               "dataType": "follow_up",
-              "tierAccessLevel": "private",
+              "tierAccessLevel": "regular",
               "nodeCountTitle": "Follow_ups",
               "fieldMapping": [
                 { "field": "pat_id", "name": "Patient Id"},
@@ -756,7 +779,8 @@ portal:
               },
               "accessibleFieldCheckList": ["project_id"],
               "accessibleValidationField": "project_id"
-            }
+            },
+            "getAccessButtonLink": "https://ufcdc-portal.org/getAccess"
           },
           {
             "tabTitle": "Biospecimens",
@@ -874,7 +898,7 @@ portal:
             "buttons": [],
             "guppyConfig": {
               "dataType": "aliquot",
-              "tierAccessLevel": "private",
+              "tierAccessLevel": "regular",
               "nodeCountTitle": "Biospecimens",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project" },
@@ -894,7 +918,8 @@ portal:
               },
               "accessibleFieldCheckList": ["project_id"],
               "accessibleValidationField": "project_id"
-            }
+            },
+            "getAccessButtonLink": "https://ufcdc-portal.org/getAccess"
           },
           {
             "tabTitle": "Lab Results",
@@ -1009,7 +1034,7 @@ portal:
             },
             "guppyConfig": {
               "dataType": "molecular_test",
-              "tierAccessLevel": "private",
+              "tierAccessLevel": "regular",
               "nodeCountTitle": "Lab Results",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project" },
@@ -1029,7 +1054,8 @@ portal:
               },
               "accessibleFieldCheckList": ["project_id"],
               "accessibleValidationField": "project_id"
-            }
+            },
+            "getAccessButtonLink": "https://ufcdc-portal.org/getAccess"
           },
           {
             "tabTitle": "Omics Data",
@@ -1160,7 +1186,7 @@ portal:
             ],
             "guppyConfig": {
               "dataType": "core_metadata_collection",
-              "tierAccessLevel": "private",
+              "tierAccessLevel": "regular",
               "nodeCountTitle": "Metadata Collections",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project id" },
@@ -1179,7 +1205,8 @@ portal:
               },
               "accessibleFieldCheckList": ["project_id"],
               "accessibleValidationField": "project_id"
-            }
+            },
+            "getAccessButtonLink": "https://ufcdc-portal.org/getAccess"
           },
           {
             "tabTitle": "Image Data",
@@ -1297,7 +1324,7 @@ portal:
             ],
             "guppyConfig": {
               "dataType": "slide_image",
-              "tierAccessLevel": "private",
+              "tierAccessLevel": "regular",
               "nodeCountTitle": "Metadata Collections",
               "fieldMapping": [
                 { "field": "project_id", "name": "Project id" },
@@ -1316,7 +1343,8 @@ portal:
               },
               "accessibleFieldCheckList": ["project_id"],
               "accessibleValidationField": "project_id"
-            }
+            },
+            "getAccessButtonLink": "https://ufcdc-portal.org/getAccess"
           }
         ],
         "useArboristUI": true,

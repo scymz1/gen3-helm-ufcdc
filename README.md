@@ -78,4 +78,6 @@ other codes I used myself:
   kubectl rollout restart deployment arborist-deployment
   kubectl rollout restart deployment guppy-deployment
 
+  docker build -t minghaozhou01/cancer_commons_portal:v4 .
+
 ```

@@ -1,0 +1,17 @@
+sudo apt update
+sudo apt install python3.9 python3.9-venv
+
+
+python3.9 -m venv py3.9_myenv
+source py3.9_myenv/bin/activate
+
+CREATE ROLE exouser WITH LOGIN PASSWORD 'your_password';
+
+helm upgrade --install requestor gen3/requestor -f ./ufcdc_config/requestor_configs/requestor_config.yaml
+
+kubectl edit secret requestor-postgresql
+data:
+  postgres-password: cWlhbnFpYW5Tb25n  # Base64-encoded password
+echo -n 'qianqianSong' | base64
+
+kubectl get secret requestor-postgresql -o yaml

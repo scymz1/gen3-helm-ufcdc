@@ -24,7 +24,7 @@ tsv_file_paths = ["/home/exouser/new_data/ADNI/study_adni.tsv", "/home/exouser/n
 "/home/exouser/new_data/ADNI/v2/demographic_adni_v2.tsv", "/home/exouser/new_data/ADNI/v2/follow_up_adni_v2_drop_duplicate.tsv", "/home/exouser/new_data/ADNI/v2/aliquot_adni_v2_drop_duplicate.tsv",
 "/home/exouser/new_data/ADNI/v2/molecular_test_adni_v2_drop_duplicate.tsv", "/home/exouser/new_data/ADNI/read_groups_modified.tsv", "/home/exouser/new_data/ADNI/genomic_profile_adni_v2.tsv"]
 
-tsv_file_paths = ["/home/exouser/new_data/ADNI/v2/molecular_test_adni_v3.tsv"]
+# tsv_file_paths = ["/home/exouser/new_data/ADNI/v2/molecular_test_adni_v3.tsv"]
 
 # Create the nodes
 for file in tsv_file_paths:

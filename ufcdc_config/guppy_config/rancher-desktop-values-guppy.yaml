@@ -4,7 +4,7 @@ global:
   hostname: ufcdc-portal.org
   dictionaryUrl: https://scymz1.github.io/cancer_commons_dictionary/schema.json
   tierAccessLevel: "regular"
-  tierAccessLimit: "5"
+  tierAccessLimit: "10000"
 
 
 # image:
