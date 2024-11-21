@@ -24,8 +24,8 @@ fence:
     MOCK_GOOGLE_AUTH: false
     OPENID_CONNECT:
       google:
-        client_id: xxx
-        client_secret: xxx
+        client_id: xxxx
+        client_secret: xxxx
   USER_YAML: |
     cloud_providers: {}
     authz:
@@ -278,7 +278,7 @@ fence:
 portal:
   image:
     repository: minghaozhou01/cancer_commons_portal
-    tag: v4
+    tag: v5
   gitops:
     json: |
       {
@@ -1862,6 +1862,9 @@ etl:
           - name: md5sum
         parent_props:
           - path: core_metadata_collections[core_metadata_collections_id:submitter_id]
+
+requestor:
+  enable: true 
 
 
       # - name: ufcdc_gene_expression

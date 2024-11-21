@@ -7,8 +7,10 @@ source py3.9_myenv/bin/activate
 
 CREATE ROLE exouser WITH LOGIN PASSWORD 'your_password';
 
-helm upgrade --install requestor gen3/requestor -f ./ufcdc_config/requestor_configs/requestor_config.yaml
-
+helm upgrade --install requestor gen3/requestor
+helm upgrade --install requestor ./helm/requestor
+helm upgrade --install requestor ./helm/requestor -f /home/exouser/gen3-helm-ufcdc/ufcdc_config/requestor_configs/requestor_config.yaml
+helm upgrade --install requestor gen3/requestor -f /home/exouser/gen3-helm-ufcdc/ufcdc_config/requestor_configs/requestor_config.yaml
 kubectl edit secret requestor-postgresql
 data:
   postgres-password: cWlhbnFpYW5Tb25n  # Base64-encoded password

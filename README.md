@@ -80,4 +80,8 @@ other codes I used myself:
 
   docker build -t minghaozhou01/cancer_commons_portal:v4 .
 
+  helm upgrade --install gen3 ./helm/gen3 -f /home/exouser/gen3-helm-ufcdc/ufcdc_config/major_config/gen3_config_v7_less_downlaod_options.yaml
+
+  helm upgrade --install gen3 gen3/gen3 -f /home/exouser/gen3-helm-ufcdc/ufcdc_config/major_config/gen3_config_v7_less_downlaod_options.yaml
+
 ```
