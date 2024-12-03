@@ -10,7 +10,7 @@ helm upgrade --install gen3 ./helm/gen3 -f ./ufcdc_config/major_config/gen3_conf
 Then create program node and project node, and instructions is same as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md), then upload tsv files in [demo-data](./demo-data) folder following same guidelines as [this](https://github.com/Su-informatics-lab/ardac/blob/master/helm/docs/rancher-desktop.md).
 ```
 minikube service revproxy-service --url
-sudo vi /etc/caddy/Caddyfile 
+sudo vi /etc/caddy/Caddyfile
 sudo systemctl restart caddy
 ```
 
@@ -22,6 +22,7 @@ But remember to scale back when finished:
 ```
 kubectl scale --replicas=1 deployment/sheepdog-deployment
 kubectl delete pod --field-selector=status.phase==Succeeded
+kubectl scale --replicas=1 deployment/requestor-deployment
 ```
 
 Now the ETL job needs to be started:
@@ -33,13 +34,13 @@ Verify the job for etl completes in k9s. You can also curl the indices on the el
 to replace the pod name with what is in k9s)
 
 ```
-kubectl exec -it portal-deployment-5f84b7b6b8-nltx4 -- bash
+kubectl exec -it portal-deployment-77d9bc4df4-zdssw -- bash
 curl -X GET http://gen3-elasticsearch-master:9200/_cat/indices?v
 ```
 
 If you want to rerun etl process, please delete previous elastic indices before executing again:
 ```
-kubectl exec -it portal-deployment-58d5b54b89-sfd5w -- bash
+kubectl exec -it portal-deployment-77d9bc4df4-zdssw -- bash
 curl -X DELETE 'http://gen3-elasticsearch-master:9200/_all'
 ```
 
@@ -78,10 +79,30 @@ other codes I used myself:
   kubectl rollout restart deployment arborist-deployment
   kubectl rollout restart deployment guppy-deployment
 
-  docker build -t minghaozhou01/cancer_commons_portal:v4 .
+  docker build -t minghaozhou01/cancer_commons_portal:v9 .
+  docker push minghaozhou01/cancer_commons_portal:v9
+  docker rmi -f $(docker images -q)
+
+  docker rmi --all --force
 
   helm upgrade --install gen3 ./helm/gen3 -f /home/exouser/gen3-helm-ufcdc/ufcdc_config/major_config/gen3_config_v7_less_downlaod_options.yaml
 
   helm upgrade --install gen3 gen3/gen3 -f /home/exouser/gen3-helm-ufcdc/ufcdc_config/major_config/gen3_config_v7_less_downlaod_options.yaml
 
+  to run local deployment
+  npm ci
+  HOSTNAME=ufcdc-portal.org APP=config NODE_ENV=dev bash ./runWebpack.sh
+  sudo sysctl fs.inotify.max_user_watches=524288
+  NODE_OPTIONS=--openssl-legacy-provider HOSTNAME=ufcdc-portal.org APP=config NODE_ENV=dev bash ./runWebpack.sh
+
+  poetry run alembic revision --autogenerate -m "Your migration message"
+
+  docker build -t minghaozhou01/cancer_commons_requestor:v3 .
+  docker push minghaozhou01/cancer_commons_requestor:v3
+  docker rmi -f $(docker images -q)
+  
+  printenv
+  POSTGRES_PASSWORD=???
+  \l
+  \c requestor_gen3
 ```

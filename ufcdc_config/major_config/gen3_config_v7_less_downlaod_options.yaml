@@ -19,13 +19,20 @@ global:
   #     # -- (string) Port for Postgres.
   #     port: "5432"
 
+
+requestor:
+  enabled: true 
+  image:
+    repository: minghaozhou01/cancer_commons_requestor
+    tag: v3
+
 fence: 
   FENCE_CONFIG:
     MOCK_GOOGLE_AUTH: false
     OPENID_CONNECT:
       google:
-        client_id: xxxx
-        client_secret: xxxx
+        client_id: xxx
+        client_secret: xxx
   USER_YAML: |
     cloud_providers: {}
     authz:
@@ -35,6 +42,7 @@ fence:
       # policies automatically given to authenticated users (in addition to their other policies)
       all_users_policies:
       - public_programs_reader
+      - requestor_creator
 
       groups:
       # ARDaC administrators
@@ -75,6 +83,9 @@ fence:
           subresources:
             - name: presigned_url
             - name: login
+        - name: requestor
+          subresources:
+            - name: request
       - name: open
       - name: programs
         subresources:
@@ -88,6 +99,11 @@ fence:
 
 
       policies:
+      - id: requestor_reader
+        role_ids:
+        - requestor_reader
+        resource_paths:
+        - /services/requestor/request
       - id: audit_reader
         role_ids:
         - audit_reader
@@ -155,6 +171,12 @@ fence:
         - /programs/Project/projects/demo
         - /programs/Project/projects/UKB
         - /programs/Project/projects/ADNI
+      - id: requestor_creator
+        description: Allows requesting access to any resource under "/programs"
+        role_ids:
+        - requestor_creator_role
+        resource_paths:
+        - /programs
 
       roles:
       - id: audit_reader
@@ -175,6 +197,12 @@ fence:
           action:
             service: jupyterhub
             method: access
+      - id: requestor_reader
+        permissions:
+          - id: requestor_reader_permission
+            action:
+              service: requestor
+              method: read
       - id: sheepdog_admin
         description: CRUD access to programs and projects
         permissions:
@@ -249,6 +277,12 @@ fence:
           action:
             method: read-storage
             service: fence
+      - id: requestor_creator_role
+        permissions:
+          - id: requestor_creator_action
+            action:
+              service: requestor
+              method: create
 
     clients:
       wts:
@@ -274,11 +308,14 @@ fence:
         - all_programs_reader
         - audit_reader
         - CC_admin
+      mz50@rice.edu:
+        polices:
+        - requestor_reader
 
 portal:
   image:
     repository: minghaozhou01/cancer_commons_portal
-    tag: v5
+    tag: v9
   gitops:
     json: |
       {
@@ -1863,10 +1900,9 @@ etl:
         parent_props:
           - path: core_metadata_collections[core_metadata_collections_id:submitter_id]
 
-requestor:
-  enable: true 
 
 
+  
       # - name: ufcdc_gene_expression
       #   doc_type: gene_expression
       #   type: aggregator
