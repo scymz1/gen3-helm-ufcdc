@@ -1,3 +1,0 @@
-*type	project_id	*submitter_id	*projects.code	*study_name	data_description	study_description	type_of_data
-study	cancer_commons_program-demo_data_project	obs	demo_data_project	observational			
-study	cancer_commons_program-demo_data_project	clinical	demo_data_project	clinical_trial			
