@@ -24,7 +24,7 @@ requestor:
   enabled: true 
   image:
     repository: minghaozhou01/cancer_commons_requestor
-    tag: v3
+    tag: v3.7
 
 fence: 
   FENCE_CONFIG:
@@ -315,7 +315,7 @@ fence:
 portal:
   image:
     repository: minghaozhou01/cancer_commons_portal
-    tag: v9
+    tag: v9.3
   gitops:
     json: |
       {

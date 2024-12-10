@@ -3,7 +3,7 @@
 
 This is uf cancer-data-center application development code using gen3. To start helm deployment:
 ```
-minikube start --kubernetes-version v1.27.11 --memory 24g --cpus 4
+minikube start --kubernetes-version v1.27.11 --memory 35g --cpus 11
 sudo sysctl -w vm.max_map_count=262144
 helm upgrade --install gen3 ./helm/gen3 -f ./ufcdc_config/major_config/gen3_config_v7_less_downlaod_options.yaml
 ```
@@ -79,8 +79,8 @@ other codes I used myself:
   kubectl rollout restart deployment arborist-deployment
   kubectl rollout restart deployment guppy-deployment
 
-  docker build -t minghaozhou01/cancer_commons_portal:v9 .
-  docker push minghaozhou01/cancer_commons_portal:v9
+  docker build -t minghaozhou01/cancer_commons_portal:v9.3 .
+  docker push minghaozhou01/cancer_commons_portal:v9.3
   docker rmi -f $(docker images -q)
 
   docker rmi --all --force
@@ -97,12 +97,18 @@ other codes I used myself:
 
   poetry run alembic revision --autogenerate -m "Your migration message"
 
-  docker build -t minghaozhou01/cancer_commons_requestor:v3 .
-  docker push minghaozhou01/cancer_commons_requestor:v3
+  docker build -t minghaozhou01/cancer_commons_requestor:v3.7 .
+  docker push minghaozhou01/cancer_commons_requestor:v3.7
   docker rmi -f $(docker images -q)
   
+  kubectl exec -it gen3-postgresql-0 -- bash
   printenv
-  POSTGRES_PASSWORD=???
+  POSTGRES_PASSWORD=eSQm8IvCsK
+  psql -h localhost -p 5432 -U postgres
   \l
   \c requestor_gen3
+  \dt
+
+  source myenv/bin/activate
+  python /home/exouser/gen3-helm-ufcdc/code_for_modify_nodes/create_node_demo_adni.py /home/exouser/gen3-helm-ufcdc/code_for_modify_nodes/create_node_demo_ukb.py /home/exouser/gen3-helm-ufcdc/code_for_modify_nodes/create_node_demo.py
 ```
