@@ -19,6 +19,68 @@ global:
   #     # -- (string) Port for Postgres.
   #     port: "5432"
 
+hatchery:
+  enabled: true
+  hatchery:
+    containers:
+      - target-port: 8888
+        cpu-limit: "1.0"
+        memory-limit: 2Gi
+        name: "(Tutorials) Example Analysis Jupyter Lab Notebooks"
+        image: quay.io/cdis/heal-notebooks:combined_tutorials__latest
+        env:
+          FRAME_ANCESTORS: https://{{ .Values.global.hostname }}
+        args:
+          - "--NotebookApp.base_url=/lw-workspace/proxy/"
+          - "--NotebookApp.default_url=/lab"
+          - "--NotebookApp.password=''"
+          - "--NotebookApp.token=''"
+          - "--NotebookApp.shutdown_no_activity_timeout=5400"
+          - "--NotebookApp.quit_button=False"
+        command:
+          - start-notebook.sh
+        path-rewrite: "/lw-workspace/proxy/"
+        use-tls: "false"
+        ready-probe: "/lw-workspace/proxy/"
+        lifecycle-post-start:
+          - "/bin/sh"
+          - "-c"
+          - export IAM=`whoami`; rm -rf /home/$IAM/pd/dockerHome; rm -rf /home/$IAM/pd/lost+found;
+            ln -s /data /home/$IAM/pd/; true
+        user-uid: 1000
+        fs-gid: 100
+        user-volume-location: "/home/jovyan/pd"
+        gen3-volume-location: "/home/jovyan/.gen3"
+      - target-port: 8787
+        cpu-limit: "1.0"
+        memory-limit: "1024Mi"
+        name: "RStudio test"
+        image: quay.io/cdis/rstudio:master
+        env:
+          WWW_FRAME_ORIGIN: "ufcdc-portal.org"
+          DISABLE_AUTH: "true"
+        args: []
+        command: []
+        path-rewrite: "/"
+        use-tls: "false"
+        ready-probe: "/"
+        user-volume-location: "/home/rstudio/pd" #"/home/rstudio"
+        fs-gid: 100
+      # - target-port: 8787
+      #   cpu-limit: "1.0"
+      #   memory-limit: "1024Mi"
+      #   name: "R Studio InflammatoryR"
+      #   image: "quay.io/cdis/rstudio-inflammatory:jupyter-nde1.1.2"
+      #   env: 
+      #     WWW_FRAME_ORIGIN: "https://tb.diseasedatahub.org\ https://microbiome.diseasedatahub.org\ https://aids.diseasedatahub.org\ https://flu.diseasedatahub.org"
+      #     DISABLE_AUTH: "true"
+      #   args: []
+      #   path-rewrite: "/"
+      #   use-tls: "false"
+      #   ready-probe: "/"
+      #   user-volume-location: "/home/rstudio/pd"
+      #   fs-gid: 100
+
 
 requestor:
   enabled: true 
@@ -43,6 +105,7 @@ fence:
       all_users_policies:
       - public_programs_reader
       - requestor_creator
+      - workspace
 
       groups:
       # ARDaC administrators
